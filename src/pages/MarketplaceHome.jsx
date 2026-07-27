@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, LogOut, Pizza, Beer, IceCream, Cake, Utensils, Croissant, Drumstick, ShoppingCart, Shirt, Baby, Footprints, Brush, Sparkles, Droplets, Scissors, Store, Heart, Package, Smartphone, Monitor, Headphones, Gamepad2, Pill, Dumbbell, Stethoscope, Glasses, Bone, PawPrint, HeartPulse, Wrench, Truck, Home, BookOpen, Gift, Leaf } from 'lucide-react';
+import { User, LogOut, Pizza, Beer, IceCream, Cake, Utensils, Croissant, Drumstick, ShoppingCart, Shirt, Baby, Footprints, Brush, Sparkles, Droplets, Scissors, Store, Heart, Package, Smartphone, Monitor, Headphones, Gamepad2, Pill, Dumbbell, Stethoscope, Glasses, Bone, PawPrint, HeartPulse, Wrench, Truck, Home, BookOpen, Gift, Leaf, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -125,7 +125,7 @@ export default function MarketplaceHome() {
         </div>
 
         {/* Categories Navigation */}
-        <div className="flex justify-center mb-8 w-full">
+        <div className="flex justify-center items-center mb-8 w-full relative">
           <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar w-[304px] snap-x snap-mandatory scroll-smooth">
             {Object.keys(allCategories).map((cat) => (
               <button 
@@ -140,6 +140,11 @@ export default function MarketplaceHome() {
                 {cat}
               </button>
             ))}
+          </div>
+
+          {/* Scroll Indicator */}
+          <div className="absolute right-1 sm:right-4 text-[#adb5bd] flex items-center justify-center animate-pulse pointer-events-none pb-2">
+            <ChevronRight size={24} />
           </div>
         </div>
 
