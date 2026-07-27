@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, LogOut, Pizza, Beer, IceCream, Cake, Utensils, Croissant, Drumstick, ShoppingCart, Shirt, Baby, Footprints, Brush, Sparkles, Droplets, Scissors, Store, Heart, Package, Smartphone, Monitor, Headphones, Gamepad2, Pill, Dumbbell, Stethoscope, Glasses, Bone, PawPrint, HeartPulse, Wrench, Truck, Home, BookOpen, Gift, Leaf, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import MarketplaceBottomNav from '../components/MarketplaceBottomNav';
 
 export default function MarketplaceHome() {
   const navigate = useNavigate();
@@ -173,20 +174,8 @@ export default function MarketplaceHome() {
 
       </main>
 
-      {/* Fixed Bottom Navigation */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-6 z-50 pointer-events-none">
-        <div className="bg-[#f8f9fa]/90 backdrop-blur-md border border-[#ced4da] rounded-full px-8 py-3 flex justify-between items-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] pointer-events-auto">
-          <button className="group w-12 h-12 rounded-full bg-[#ffffff] text-[#495057] flex items-center justify-center hover:bg-[#343a40] hover:text-[#f8f9fa] transition-all duration-300 shadow-sm hover:scale-105 border border-[#e9ecef]">
-            <ShoppingCart size={22} className="group-hover:scale-110 transition-transform" />
-          </button>
-          <button className="group w-12 h-12 rounded-full bg-[#ffffff] text-[#495057] flex items-center justify-center hover:bg-[#343a40] hover:text-[#f8f9fa] transition-all duration-300 shadow-sm hover:scale-105 border border-[#e9ecef]">
-            <Heart size={22} className="group-hover:scale-110 transition-transform" />
-          </button>
-          <button className="group w-12 h-12 rounded-full bg-[#ffffff] text-[#495057] flex items-center justify-center hover:bg-[#343a40] hover:text-[#f8f9fa] transition-all duration-300 shadow-sm hover:scale-105 border border-[#e9ecef]">
-            <Package size={22} className="group-hover:scale-110 transition-transform" />
-          </button>
-        </div>
-      </div>
+      {/* Fixed Bottom Navigation with Modals */}
+      <MarketplaceBottomNav />
       </div>
     </div>
   );
