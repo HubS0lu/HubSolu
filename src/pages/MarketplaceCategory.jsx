@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ArrowLeft, Search, Heart, Star, Clock, MapPin, SlidersHorizontal, Pizza, Store, Dumbbell, Smartphone, Shirt, HeartPulse, Bone, Wrench, Utensils, Beer, IceCream, Cake, ShoppingCart } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import MarketplaceBottomNav from '../components/MarketplaceBottomNav';
+import { useStore } from '../contexts/StoreContext';
 
 export default function MarketplaceCategory() {
   const location = useLocation();
@@ -9,8 +10,10 @@ export default function MarketplaceCategory() {
   const categoryName = location.state?.categoryName || 'Categoria';
   const categoryImg = location.state?.categoryImg || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80';
 
-  const [favorites, setFavorites] = useState([2]); // Mock ID 2 is favorited by default
+  const { getStoresByCategory } = useStore();
+  const [favorites, setFavorites] = useState(['burger-co']); 
   const [activeFilter, setActiveFilter] = useState('Todos');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const getCategoryIcon = (name) => {
     const n = name.toLowerCase();
@@ -46,14 +49,7 @@ export default function MarketplaceCategory() {
 
   const filters = ['Todos', 'Entrega Grátis', 'Mais Rápidos', 'Melhor Avaliados'];
 
-  const mockStores = Array(8).fill(null).map((_, idx) => ({
-    id: idx + 1,
-    name: `${categoryName} ${idx + 1}`,
-    rating: (Math.random() * (5.0 - 4.0) + 4.0).toFixed(1),
-    time: `${Math.floor(Math.random() * 15) + 20}-${Math.floor(Math.random() * 15) + 40} min`,
-    fee: idx % 3 === 0 ? 'Grátis' : `R$ ${(Math.random() * 8 + 3).toFixed(2).replace('.', ',')}`,
-    img: categoryImg
-  }));
+  const categoryStores = getStoresByCategory(categoryName).filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <div className="flex justify-center bg-[#212529] min-h-screen">
@@ -79,7 +75,7 @@ export default function MarketplaceCategory() {
             {/* Centered Content */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center px-8 w-full mt-2">
               <h1 className="text-3xl font-extrabold text-[#f8f9fa] tracking-wide drop-shadow-md w-full truncate">{categoryName}</h1>
-              <p className="text-[#ced4da] text-xs mt-1.5 font-medium uppercase tracking-widest">{mockStores.length} opções</p>
+              <p className="text-[#ced4da] text-xs mt-1.5 font-medium uppercase tracking-widest">{categoryStores.length} opções</p>
             </div>
           </div>
         </div>
@@ -93,6 +89,8 @@ export default function MarketplaceCategory() {
             <input 
               type="text" 
               placeholder="Buscar lojas..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white border border-[#e9ecef] rounded-2xl py-3 pl-11 pr-4 focus:outline-none focus:border-[#adb5bd] focus:ring-1 focus:ring-[#adb5bd] transition-all shadow-sm text-[#495057] placeholder-[#adb5bd] text-sm font-medium"
             />
             <div className="absolute inset-y-0 right-2 flex items-center">
@@ -124,40 +122,47 @@ export default function MarketplaceCategory() {
 
         {/* Main Content - Vertical Store List */}
         <div className="flex-1 w-full px-4 py-2 flex flex-col gap-4 overflow-y-auto pb-6">
-          {mockStores.map((store) => {
-            const isFav = favorites.includes(store.id);
-            return (
-              <div 
-                key={store.id} 
-                onClick={() => navigate('/marketplace/store', { state: { storeCategory: categoryName } })}
-                className="bg-white border border-[#e9ecef] rounded-2xl p-3 flex items-center gap-4 group hover:border-[#ced4da] transition-all duration-300 shadow-sm cursor-pointer relative"
-              >
-                {/* Store Avatar */}
-                <div className="w-[72px] h-[72px] rounded-full bg-[#f8f9fa] flex items-center justify-center overflow-hidden border-2 border-[#e9ecef] shrink-0">
-                  <img src={store.img} alt={store.name} className="w-full h-full object-cover" />
-                </div>
-                
-                {/* Store Info */}
-                <div className="flex-1 min-w-0 py-1">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-sm font-bold text-[#212529] truncate pr-8">{store.name}</h3>
+          {categoryStores.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <Store size={48} className="text-[#ced4da] mb-4 opacity-50" />
+              <h3 className="text-[#495057] font-semibold text-sm">Nenhuma loja encontrada</h3>
+              <p className="text-[#868e96] text-xs mt-1">Ainda não temos lojas parceiras nesta categoria.</p>
+            </div>
+          ) : (
+            categoryStores.map((store) => {
+              const isFav = favorites.includes(store.id);
+              return (
+                <div 
+                  key={store.id} 
+                  onClick={() => navigate('/marketplace/store', { state: { storeId: store.id } })}
+                  className="bg-white border border-[#e9ecef] rounded-2xl p-3 flex items-center gap-4 group hover:border-[#ced4da] transition-all duration-300 shadow-sm cursor-pointer relative"
+                >
+                  {/* Store Avatar */}
+                  <div className="w-[72px] h-[72px] rounded-full bg-[#f8f9fa] flex items-center justify-center overflow-hidden border-2 border-[#e9ecef] shrink-0">
+                    <img src={store.logo} alt={store.name} className="w-full h-full object-cover" />
                   </div>
                   
-                  <div className="flex items-center gap-2 mt-1.5 text-[11px] font-semibold text-[#6c757d]">
-                    <span className="flex items-center gap-0.5 text-[#f59f00]"><Star size={12} className="fill-[#f59f00]"/> {store.rating}</span>
-                    <span className="w-1 h-1 rounded-full bg-[#ced4da]"></span>
-                    <span>{categoryName}</span>
-                    <span className="w-1 h-1 rounded-full bg-[#ced4da]"></span>
-                    <span>1.2 km</span>
-                  </div>
+                  {/* Store Info */}
+                  <div className="flex-1 min-w-0 py-1">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-sm font-bold text-[#212529] truncate pr-8">{store.name}</h3>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-1.5 text-[11px] font-semibold text-[#6c757d]">
+                      <span className="flex items-center gap-0.5 text-[#f59f00]"><Star size={12} className="fill-[#f59f00]"/> {store.rating}</span>
+                      <span className="w-1 h-1 rounded-full bg-[#ced4da]"></span>
+                      <span>{store.subCategory || store.category}</span>
+                      <span className="w-1 h-1 rounded-full bg-[#ced4da]"></span>
+                      <span>1.2 km</span>
+                    </div>
 
-                  <div className="flex items-center gap-3 mt-1.5 text-[11px] font-medium text-[#868e96]">
-                    <span className="flex items-center gap-1"><Clock size={12}/> {store.time}</span>
-                    <span className={`flex items-center gap-1 ${store.fee === 'Grátis' ? 'text-[#2b8a3e] font-bold' : ''}`}>
-                      • Entrega {store.fee}
-                    </span>
+                    <div className="flex items-center gap-3 mt-1.5 text-[11px] font-medium text-[#868e96]">
+                      <span className="flex items-center gap-1"><Clock size={12}/> {store.deliveryTime}</span>
+                      <span className={`flex items-center gap-1 ${store.deliveryFee === 0 ? 'text-[#2b8a3e] font-bold' : ''}`}>
+                        • Entrega {store.deliveryFee === 0 ? 'Grátis' : `R$ ${store.deliveryFee.toFixed(2).replace('.', ',')}`}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
                 {/* Favorite Heart Button */}
                 <button 
@@ -171,7 +176,7 @@ export default function MarketplaceCategory() {
                 </button>
               </div>
             );
-          })}
+          }))}
         </div>
 
         {/* Fixed Bottom Navigation with Modals */}

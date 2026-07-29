@@ -1,35 +1,18 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Heart, Package, X, Store, Minus, Plus, ChevronRight, Clock, Truck, Store as StoreIcon } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
+import { useOrders } from '../contexts/OrderContext';
 
 export default function MarketplaceBottomNav() {
   const [activeModal, setActiveModal] = useState(null); // 'cart', 'favorites', 'tracking', or null
+  const { cart, updateQuantity, totalValue, totalItems } = useCart();
+  const { orders } = useOrders();
 
   // --- MOCK DATA ---
-  const cartItems = [
-    { id: 1, name: 'X-Bacon Artesanal', price: 35.90, quantity: 1, store: 'Hamburgueria Grill', category: 'Alimentação', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&q=50' },
-    { id: 2, name: 'Refrigerante Cola 350ml', price: 6.00, quantity: 2, store: 'Hamburgueria Grill', category: 'Alimentação', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200&q=50' }
-  ];
 
   const favoriteStores = [
     { id: 1, name: 'Hamburgueria Grill', category: 'Alimentação', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&q=50' },
     { id: 2, name: 'Moda Fashion', category: 'Roupas', img: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=200&q=50' }
-  ];
-
-  const activeOrders = [
-    { 
-      id: '#10452', 
-      store: 'Hamburgueria Grill', 
-      type: 'food_pickup', // food_delivery, food_pickup, retail_delivery
-      status: 2, // 0: Recebido, 1: Preparando, 2: Pronto para Retirada, 3: Concluído
-      time: '19:45'
-    },
-    { 
-      id: '#10453', 
-      store: 'Moda Fashion', 
-      type: 'retail_delivery', 
-      status: 1, // 0: Pagamento Aprovado, 1: Embalando, 2: Em Trânsito, 3: Entregue
-      time: 'Ontem'
-    }
   ];
 
   // --- RENDER HELPERS ---
@@ -80,30 +63,37 @@ export default function MarketplaceBottomNav() {
           <button onClick={() => setActiveModal(null)} className="p-2 rounded-full bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef] transition-colors"><X size={20} /></button>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {cartItems.map(item => (
-            <div key={item.id} className="flex gap-4 bg-white p-3 rounded-2xl border border-[#e9ecef] shadow-sm">
-              <img src={item.img} alt={item.name} className="w-20 h-20 rounded-xl object-cover" />
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-[#212529] leading-tight">{item.name}</h3>
-                  <p className="text-[11px] font-semibold text-[#868e96] mt-0.5 bg-[#f1f3f5] inline-block px-1.5 py-0.5 rounded">{item.store}</p>
-                </div>
-                <div className="flex justify-between items-end mt-2">
-                  <span className="font-bold text-[#343a40]">R$ {item.price.toFixed(2).replace('.', ',')}</span>
-                  <div className="flex items-center gap-3 bg-[#f8f9fa] border border-[#e9ecef] rounded-lg px-2 py-1">
-                    <button className="text-[#495057]"><Minus size={14} /></button>
-                    <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                    <button className="text-[#495057]"><Plus size={14} /></button>
+          {cart.length === 0 ? (
+            <div className="text-center py-10 text-[#adb5bd]">
+              <ShoppingCart size={48} className="mx-auto mb-4 opacity-50" />
+              <p>Seu carrinho está vazio.</p>
+            </div>
+          ) : (
+            cart.map(item => (
+              <div key={item.id} className="flex gap-4 bg-white p-3 rounded-2xl border border-[#e9ecef] shadow-sm">
+                <img src={item.img} alt={item.name} className="w-20 h-20 rounded-xl object-cover" />
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#212529] leading-tight">{item.name}</h3>
+                    {item.store && <p className="text-[11px] font-semibold text-[#868e96] mt-0.5 bg-[#f1f3f5] inline-block px-1.5 py-0.5 rounded">{item.store}</p>}
+                  </div>
+                  <div className="flex justify-between items-end mt-2">
+                    <span className="font-bold text-[#343a40]">R$ {item.price.toFixed(2).replace('.', ',')}</span>
+                    <div className="flex items-center gap-3 bg-[#f8f9fa] border border-[#e9ecef] rounded-lg px-2 py-1">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="text-[#495057]"><Minus size={14} /></button>
+                      <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="text-[#495057]"><Plus size={14} /></button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
         <div className="p-6 bg-white border-t border-[#e9ecef] rounded-t-3xl shadow-[0_-4px_20px_rgb(0,0,0,0.05)]">
           <div className="flex justify-between mb-2 text-[#495057] text-sm">
             <span>Subtotal</span>
-            <span className="font-semibold">R$ {(47.90).toFixed(2).replace('.', ',')}</span>
+            <span className="font-semibold">R$ {totalValue.toFixed(2).replace('.', ',')}</span>
           </div>
           <div className="flex justify-between mb-4 text-[#495057] text-sm">
             <span>Taxa de Entrega</span>
@@ -111,7 +101,7 @@ export default function MarketplaceBottomNav() {
           </div>
           <div className="flex justify-between mb-6 text-lg font-bold text-[#212529]">
             <span>Total</span>
-            <span>R$ {(47.90).toFixed(2).replace('.', ',')}</span>
+            <span>R$ {totalValue.toFixed(2).replace('.', ',')}</span>
           </div>
           <button className="w-full py-4 rounded-xl bg-[#343a40] text-white font-bold text-[15px] hover:bg-[#212529] transition-colors shadow-lg flex items-center justify-center gap-2">
             Finalizar Compra <ChevronRight size={18} />
@@ -153,38 +143,54 @@ export default function MarketplaceBottomNav() {
           <button onClick={() => setActiveModal(null)} className="p-2 rounded-full bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef] transition-colors"><X size={20} /></button>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          {activeOrders.map((order, index) => (
-            <div key={index} className="bg-white p-5 rounded-2xl border border-[#e9ecef] shadow-sm flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                <div className="flex gap-3 items-center">
-                  <div className="w-10 h-10 rounded-full bg-[#f1f3f5] flex items-center justify-center text-[#495057]">
-                    {order.type.includes('food') ? <StoreIcon size={20} /> : <Truck size={20} />}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-[#212529]">{order.store}</h4>
-                    <span className="text-[11px] font-semibold text-[#868e96] bg-[#f8f9fa] border border-[#e9ecef] px-2 py-0.5 rounded-md mt-1 inline-block">Pedido {order.id}</span>
-                  </div>
-                </div>
-                <span className="text-[11px] font-semibold text-[#adb5bd] flex items-center gap-1"><Clock size={12} /> {order.time}</span>
-              </div>
-              
-              {renderTimeline(order)}
-
-              <div className="pt-2">
-                <button className="w-full py-2.5 rounded-xl border-2 border-[#e9ecef] text-[#495057] text-xs font-bold hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 shadow-sm">
-                  Falar com o Vendedor
-                </button>
-              </div>
+          {orders.length === 0 ? (
+            <div className="text-center py-10 text-[#adb5bd]">
+              <Package size={48} className="mx-auto mb-4 opacity-50" />
+              <p>Nenhum pedido feito ainda.</p>
             </div>
-          ))}
+          ) : (
+            orders.map((order, index) => (
+              <div key={index} className="bg-white p-5 rounded-2xl border border-[#e9ecef] shadow-sm flex flex-col gap-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-10 h-10 rounded-full bg-[#f1f3f5] flex items-center justify-center text-[#495057] overflow-hidden">
+                      {order.storeLogo ? (
+                        <img src={order.storeLogo} alt={order.storeName} className="w-full h-full object-cover" />
+                      ) : (
+                        <StoreIcon size={20} />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[#212529]">{order.storeName}</h4>
+                      <span className="text-[11px] font-semibold text-[#868e96] bg-[#f8f9fa] border border-[#e9ecef] px-2 py-0.5 rounded-md mt-1 inline-block">Pedido {order.id}</span>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-semibold text-[#adb5bd] flex items-center gap-1"><Clock size={12} /> {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                
+                {renderTimeline({ ...order, type: 'food_delivery' })}
+
+                <div className="pt-2">
+                  <button className="w-full py-2.5 rounded-xl border-2 border-[#e9ecef] text-[#495057] text-xs font-bold hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    Falar com o Vendedor
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
       {/* BOTTOM NAV BAR (FIXED) */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-6 z-50 pointer-events-none">
         <div className="bg-[#f8f9fa]/90 backdrop-blur-md border border-[#ced4da] rounded-full px-8 py-3 flex justify-between items-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] pointer-events-auto">
-          <button onClick={() => setActiveModal('cart')} className={`group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border border-[#e9ecef] ${activeModal === 'cart' ? 'bg-[#343a40] text-[#f8f9fa] scale-110' : 'bg-[#ffffff] text-[#495057] hover:bg-[#343a40] hover:text-[#f8f9fa] hover:scale-105'}`}>
+          <button onClick={() => setActiveModal('cart')} className={`group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border border-[#e9ecef] relative ${activeModal === 'cart' ? 'bg-[#343a40] text-[#f8f9fa] scale-110' : 'bg-[#ffffff] text-[#495057] hover:bg-[#343a40] hover:text-[#f8f9fa] hover:scale-105'}`}>
             <ShoppingCart size={22} className={activeModal === 'cart' ? '' : 'group-hover:scale-110 transition-transform'} />
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#f8f9fa] shadow-sm">
+                {totalItems}
+              </span>
+            )}
           </button>
           <button onClick={() => setActiveModal('favorites')} className={`group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border border-[#e9ecef] ${activeModal === 'favorites' ? 'bg-[#343a40] text-[#f8f9fa] scale-110' : 'bg-[#ffffff] text-[#495057] hover:bg-[#343a40] hover:text-[#f8f9fa] hover:scale-105'}`}>
             <Heart size={22} className={activeModal === 'favorites' ? '' : 'group-hover:scale-110 transition-transform'} />

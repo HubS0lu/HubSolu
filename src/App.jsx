@@ -11,6 +11,9 @@ import MarketplaceCategory from './pages/MarketplaceCategory';
 import MarketplaceStore from './pages/MarketplaceStore';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
+import { StoreProvider } from './contexts/StoreContext';
+import { OrderProvider } from './contexts/OrderContext';
 
 function MobileLayout({ children }) {
   return (
@@ -27,26 +30,32 @@ function MobileLayout({ children }) {
 export default function App() {
   return (
     <AuthProvider>
-      <ThemeProvider>
-        <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/cadastro" element={<CadastroPage />} />
-          <Route path="/selecao-negocio" element={<SelecaoNegocioPage />} />
-          <Route path="/planos" element={<PlanosPage />} />
-          <Route path="/marketplace" element={<MarketplaceHome />} />
-          <Route path="/marketplace/category" element={<MarketplaceCategory />} />
-          <Route path="/marketplace/store" element={<MarketplaceStore />} />
-          <Route path="/*" element={
-            <MobileLayout>
+      <StoreProvider>
+        <OrderProvider>
+          <ThemeProvider>
+            <CartProvider>
+              <Router>
               <Routes>
-                <Route path="/perfil" element={<PerfilPage />} />
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/cadastro" element={<CadastroPage />} />
+                <Route path="/selecao-negocio" element={<SelecaoNegocioPage />} />
+                <Route path="/planos" element={<PlanosPage />} />
+                <Route path="/marketplace" element={<MarketplaceHome />} />
+                <Route path="/marketplace/category" element={<MarketplaceCategory />} />
+                <Route path="/marketplace/store" element={<MarketplaceStore />} />
+                <Route path="/*" element={
+                  <MobileLayout>
+                    <Routes>
+                      <Route path="/perfil" element={<PerfilPage />} />
+                    </Routes>
+                  </MobileLayout>
+                } />
               </Routes>
-            </MobileLayout>
-          } />
-        </Routes>
-      </Router>
-      </ThemeProvider>
+            </Router>
+            </CartProvider>
+          </ThemeProvider>
+        </OrderProvider>
+      </StoreProvider>
     </AuthProvider>
   );
 }

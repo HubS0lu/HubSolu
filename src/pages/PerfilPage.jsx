@@ -5,6 +5,7 @@ import {
   ChefHat, Clock, Plus, Edit2, Trash2, Image, GripVertical, Save, Eye
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useOrders } from '../contexts/OrderContext';
 
 const themeCategories = [
   { id: 'food', label: 'Alimentação' },
@@ -75,8 +76,7 @@ export default function PerfilPage() {
   const [activeCategory, setActiveCategory] = useState('food');
   const [activeTheme, setActiveTheme] = useState('theme-fashion-minimalist');
   const [showStripeModal, setShowStripeModal] = useState(false);
-  
-  const [comandas, setComandas] = useState(comandasMock);
+  const { orders, updateOrderStatus } = useOrders();
   const [produtos, setProdutos] = useState(produtosLojaMock);
 
   // --- Novos Estados ---
@@ -148,7 +148,7 @@ export default function PerfilPage() {
   const navigate = useNavigate();
 
   const moveComanda = (id, newStatus) => {
-    setComandas(comandas.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    updateOrderStatus(id, newStatus);
   };
 
   useEffect(() => {
@@ -235,7 +235,7 @@ export default function PerfilPage() {
                   <ShoppingBag size={16} />
                   <h3 className="text-xs font-semibold uppercase tracking-wider">Pedidos</h3>
                 </div>
-                <p className="text-2xl font-bold text-[#212529]">{metrics.totalOrders}</p>
+                <p className="text-2xl font-bold text-[#212529]">{orders.length > 0 ? orders.length : metrics.totalOrders}</p>
                 <p className="text-[10px] text-[#6c757d] mt-1">+5% este mês</p>
               </div>
             </div>
@@ -411,29 +411,29 @@ export default function PerfilPage() {
             
             <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
               {[
-                { id: 'fila', label: 'Na Fila', color: 'bg-[#f1f3f5]', borderColor: 'border-[#ced4da]' },
-                { id: 'preparando', label: 'Preparando', color: 'bg-[#fff4e6]', borderColor: 'border-[#ffd8a8]' },
-                { id: 'pronto', label: 'Pronto', color: 'bg-[#ebfbee]', borderColor: 'border-[#b2f2bb]' }
+                { id: 0, label: 'Na Fila', color: 'bg-[#f1f3f5]', borderColor: 'border-[#ced4da]' },
+                { id: 1, label: 'Preparando', color: 'bg-[#fff4e6]', borderColor: 'border-[#ffd8a8]' },
+                { id: 2, label: 'Pronto', color: 'bg-[#ebfbee]', borderColor: 'border-[#b2f2bb]' }
               ].map(coluna => (
                 <div key={coluna.id} className={`flex-none w-80 snap-start flex flex-col h-[calc(100vh-280px)] min-h-[400px] bg-[#f8f9fa] rounded-2xl border ${coluna.borderColor} overflow-hidden shadow-sm`}>
                   <div className={`px-4 py-3 border-b ${coluna.borderColor} ${coluna.color} font-bold text-[#495057] uppercase text-xs tracking-wider flex justify-between items-center`}>
                     {coluna.label}
                     <span className="bg-white/50 text-[#495057] px-2 py-0.5 rounded-full text-[10px]">
-                      {comandas.filter(c => c.status === coluna.id).length}
+                      {orders.filter(c => c.status === coluna.id).length}
                     </span>
                   </div>
                   
                   <div className="p-3 flex-1 overflow-y-auto space-y-3">
-                    {comandas.filter(c => c.status === coluna.id).map(comanda => (
+                    {orders.filter(c => c.status === coluna.id).map(comanda => (
                       <div key={comanda.id} className="bg-white p-4 rounded-xl shadow-sm border border-[#e9ecef] flex flex-col gap-3 transition-transform hover:-translate-y-0.5">
                         <div className="flex justify-between items-start">
                           <div>
                             <span className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider">{comanda.id}</span>
-                            <h4 className="font-bold text-[#212529] text-sm leading-tight">{comanda.customer}</h4>
+                            <h4 className="font-bold text-[#212529] text-sm leading-tight">Cliente Anônimo</h4>
                           </div>
                           <div className="flex items-center gap-1 text-[#f59e0b] bg-[#fffbeb] px-2 py-1 rounded-md text-[10px] font-bold">
                             <Clock size={12} />
-                            {comanda.time}
+                            {new Date(comanda.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                           </div>
                         </div>
                         
@@ -442,7 +442,7 @@ export default function PerfilPage() {
                             {comanda.items.map((item, idx) => (
                               <li key={idx} className="text-xs text-[#495057]">
                                 <div className="font-semibold text-[#343a40] flex items-start gap-1">
-                                  <span className="mt-0.5 text-[#adb5bd]">•</span> {item.name}
+                                  <span className="mt-0.5 text-[#adb5bd]">•</span> {item.quantity}x {item.name}
                                 </div>
                                 {item.obs && (
                                   <p className="pl-2.5 mt-0.5 text-[#e03131] italic font-medium text-[10px]">
@@ -455,25 +455,25 @@ export default function PerfilPage() {
                         </div>
 
                         <div className="flex gap-2 mt-1">
-                          {coluna.id !== 'fila' && (
-                            <button onClick={() => moveComanda(comanda.id, coluna.id === 'pronto' ? 'preparando' : 'fila')} className="flex-1 py-1.5 text-[10px] font-bold text-[#495057] bg-[#f1f3f5] hover:bg-[#e9ecef] rounded-lg transition-colors">
+                          {coluna.id !== 0 && (
+                            <button onClick={() => moveComanda(comanda.id, coluna.id === 2 ? 1 : 0)} className="flex-1 py-1.5 text-[10px] font-bold text-[#495057] bg-[#f1f3f5] hover:bg-[#e9ecef] rounded-lg transition-colors">
                               Voltar
                             </button>
                           )}
-                          {coluna.id !== 'pronto' && (
-                            <button onClick={() => moveComanda(comanda.id, coluna.id === 'fila' ? 'preparando' : 'pronto')} className="flex-1 py-1.5 text-[10px] font-bold text-white bg-[#343a40] hover:bg-[#212529] rounded-lg transition-colors shadow-sm">
+                          {coluna.id !== 2 && (
+                            <button onClick={() => moveComanda(comanda.id, coluna.id === 0 ? 1 : 2)} className="flex-1 py-1.5 text-[10px] font-bold text-white bg-[#343a40] hover:bg-[#212529] rounded-lg transition-colors shadow-sm">
                               Avançar
                             </button>
                           )}
-                          {coluna.id === 'pronto' && (
-                            <button onClick={() => setComandas(comandas.filter(c => c.id !== comanda.id))} className="flex-1 py-1.5 text-[10px] font-bold text-[#2b8a3e] bg-[#ebfbee] hover:bg-[#d3f9d8] rounded-lg transition-colors">
+                          {coluna.id === 2 && (
+                            <button onClick={() => moveComanda(comanda.id, 3)} className="flex-1 py-1.5 text-[10px] font-bold text-[#2b8a3e] bg-[#ebfbee] hover:bg-[#d3f9d8] rounded-lg transition-colors">
                               Entregue
                             </button>
                           )}
                         </div>
                       </div>
                     ))}
-                    {comandas.filter(c => c.status === coluna.id).length === 0 && (
+                    {orders.filter(c => c.status === coluna.id).length === 0 && (
                       <div className="h-full flex items-center justify-center">
                         <p className="text-xs text-[#adb5bd] font-medium text-center">Nenhuma comanda</p>
                       </div>
