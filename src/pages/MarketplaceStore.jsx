@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, ChevronLeft, ChevronRight, ArrowLeft, Minus, Plus, Trash2, X, Instagram } from 'lucide-react';
+import { ShoppingCart, Search, ChevronLeft, ChevronRight, ArrowLeft, Minus, Plus, Trash2, X, Instagram, SlidersHorizontal } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -60,85 +60,85 @@ export default function MarketplaceStore() {
     switch(cat) {
       case 'Sorveteria':
         return [
-          { id: 101, name: 'Sorvete de Baunilha', img: 'https://images.unsplash.com/photo-1557142046-c704a3adf364?w=200&q=50', price: 15.00, category: 'Mais Vendidos' },
-          { id: 102, name: 'Sundae de Chocolate', img: 'https://images.unsplash.com/photo-1563805042-7684c8a9e9ce?w=200&q=50', price: 22.50, category: 'Mais Vendidos' },
-          { id: 103, name: 'Casquinha Mista', img: 'https://images.unsplash.com/photo-1558742569-ceca02abbf6b?w=200&q=50', price: 8.00, category: 'Promoções' },
-          { id: 104, name: 'Pote 2L Morango', img: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=200&q=50', price: 45.90, category: 'Kits' },
-          { id: 105, name: 'Milkshake', img: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&q=50', price: 18.00, category: 'Lançamentos' },
-          { id: 106, name: 'Banana Split', img: 'https://images.unsplash.com/photo-1526434426615-1abe81efcb0b?w=200&q=50', price: 28.50, category: 'Mais Vendidos' },
+          { id: 101, name: 'Sorvete de Baunilha', description: 'Sorvete cremoso de baunilha em fava com calda de chocolate.', img: 'https://images.unsplash.com/photo-1557142046-c704a3adf364?w=200&q=50', price: 15.00, category: 'Mais Vendidos' },
+          { id: 102, name: 'Sundae de Chocolate', description: 'Com pedaços de brownie, chantilly e cereja.', img: 'https://images.unsplash.com/photo-1563805042-7684c8a9e9ce?w=200&q=50', price: 22.50, category: 'Mais Vendidos' },
+          { id: 103, name: 'Casquinha Mista', description: 'Metade chocolate, metade baunilha em casquinha crocante.', img: 'https://images.unsplash.com/photo-1558742569-ceca02abbf6b?w=200&q=50', price: 8.00, category: 'Promoções' },
+          { id: 104, name: 'Pote 2L Morango', description: 'Pote família de sorvete sabor morango com pedaços de fruta.', img: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=200&q=50', price: 45.90, category: 'Kits' },
+          { id: 105, name: 'Milkshake', description: 'Milkshake cremoso batido na hora, escolha seu sabor.', img: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&q=50', price: 18.00, category: 'Lançamentos' },
+          { id: 106, name: 'Banana Split', description: 'Clássica taça com banana, três bolas de sorvete e coberturas.', img: 'https://images.unsplash.com/photo-1526434426615-1abe81efcb0b?w=200&q=50', price: 28.50, category: 'Mais Vendidos' },
         ];
       case 'Pizzaria':
         return [
-          { id: 101, name: 'Pizza Calabresa', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&q=50', price: 45.00, category: 'Mais Vendidos' },
-          { id: 102, name: 'Pizza Margherita', img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=200&q=50', price: 42.00, category: 'Mais Vendidos' },
-          { id: 103, name: 'Pizza 4 Queijos', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&q=50', price: 50.00, category: 'Promoções' },
-          { id: 104, name: 'Combo 2 Pizzas', img: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=200&q=50', price: 85.00, category: 'Kits' },
+          { id: 101, name: 'Pizza Calabresa', description: 'Molho de tomate, mussarela, calabresa fatiada e cebola.', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&q=50', price: 45.00, category: 'Mais Vendidos' },
+          { id: 102, name: 'Pizza Margherita', description: 'Molho de tomate, mussarela, tomate fatiado e manjericão fresco.', img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=200&q=50', price: 42.00, category: 'Mais Vendidos' },
+          { id: 103, name: 'Pizza 4 Queijos', description: 'Mussarela, provolone, gorgonzola e catupiry.', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&q=50', price: 50.00, category: 'Promoções' },
+          { id: 104, name: 'Combo 2 Pizzas', description: 'Escolha duas pizzas grandes tradicionais com desconto.', img: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=200&q=50', price: 85.00, category: 'Kits' },
         ];
       case 'Maquiagem':
       case 'Cosméticos':
         return [
-          { id: 101, name: 'Batom Vermelho', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=50', price: 35.00, category: 'Mais Vendidos' },
-          { id: 102, name: 'Base Líquida', img: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?w=200&q=50', price: 89.90, category: 'Mais Vendidos' },
-          { id: 103, name: 'Kit Pincéis', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=50', price: 120.00, category: 'Kits' },
-          { id: 104, name: 'Paleta Sombras', img: 'https://images.unsplash.com/photo-1596462502278-27bf84033005?w=200&q=50', price: 150.00, category: 'Lançamentos' },
+          { id: 101, name: 'Batom Vermelho', description: 'Efeito matte duradouro com alta pigmentação.', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=50', price: 35.00, category: 'Mais Vendidos' },
+          { id: 102, name: 'Base Líquida', description: 'Cobertura média a alta com acabamento natural. FPS 30.', img: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?w=200&q=50', price: 89.90, category: 'Mais Vendidos' },
+          { id: 103, name: 'Kit Pincéis', description: 'Kit com 12 pincéis profissionais de cerdas macias.', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=50', price: 120.00, category: 'Kits' },
+          { id: 104, name: 'Paleta Sombras', description: 'Paleta com 18 cores neutras e cintilantes para o dia a dia.', img: 'https://images.unsplash.com/photo-1596462502278-27bf84033005?w=200&q=50', price: 150.00, category: 'Lançamentos' },
         ];
       case 'Moda Masculina':
       case 'Moda Feminina':
       case 'Roupas':
         return [
-          { id: 101, name: 'Camiseta Básica', img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=50', price: 49.90, category: 'Mais Vendidos' },
-          { id: 102, name: 'Jaqueta Jeans', img: 'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?w=200&q=50', price: 199.90, category: 'Lançamentos' },
-          { id: 103, name: 'Calça Chino', img: 'https://images.unsplash.com/photo-1624378439575-d1ead6bb240e?w=200&q=50', price: 129.90, category: 'Mais Vendidos' },
-          { id: 104, name: 'Kit 3 Peças', img: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=200&q=50', price: 120.00, category: 'Kits' },
+          { id: 101, name: 'Camiseta Básica', description: '100% algodão premium, caimento perfeito e confortável.', img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=50', price: 49.90, category: 'Mais Vendidos' },
+          { id: 102, name: 'Jaqueta Jeans', description: 'Jaqueta jeans com lavagem clássica, unissex.', img: 'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?w=200&q=50', price: 199.90, category: 'Lançamentos' },
+          { id: 103, name: 'Calça Chino', description: 'Corte reto, tecido de sarja levemente com elastano.', img: 'https://images.unsplash.com/photo-1624378439575-d1ead6bb240e?w=200&q=50', price: 129.90, category: 'Mais Vendidos' },
+          { id: 104, name: 'Kit 3 Peças', description: 'Monte seu kit com 3 camisetas básicas lisas.', img: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=200&q=50', price: 120.00, category: 'Kits' },
         ];
       case 'Hamburgueria':
         return [
-          { id: 101, name: 'Costela BBQ', img: '/images/costelinha-de-porco-ao-barbecue-1657229553564_v2_4x3.jpg', price: 85.00, category: 'Mais Vendidos' },
-          { id: 102, name: 'Burger Clássico', img: '/images/double_smash_burger.jpg', price: 32.50, category: 'Mais Vendidos' },
-          { id: 103, name: 'Batata Rústica', img: '/images/batata_rustica_com_cheddar.jpg', price: 28.00, category: 'Promoções' },
-          { id: 104, name: 'Combo Família', img: '/images/double_smash_burger.jpg', price: 89.90, category: 'Kits' },
+          { id: 101, name: 'Costela BBQ', description: 'Costela suína desfiada, molho barbecue e queijo cheddar no pão australiano.', img: '/images/costelinha-de-porco-ao-barbecue-1657229553564_v2_4x3.jpg', price: 85.00, category: 'Mais Vendidos' },
+          { id: 102, name: 'Burger Clássico', description: 'Pão brioche, blend 160g, queijo prato, alface, tomate e maionese da casa.', img: '/images/double_smash_burger.jpg', price: 32.50, category: 'Mais Vendidos' },
+          { id: 103, name: 'Batata Rústica', description: 'Porção de batatas rústicas fritas, acompanhadas de maionese de alho.', img: '/images/batata_rustica_com_cheddar.jpg', price: 28.00, category: 'Promoções' },
+          { id: 104, name: 'Combo Família', description: '3 Burgers Clássicos + 2 Porções de Fritas + Refrigerante 2L.', img: '/images/double_smash_burger.jpg', price: 89.90, category: 'Kits' },
         ];
       case 'Bar':
         return [
-          { id: 101, name: 'Cerveja Artesanal IPA', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&q=50', price: 25.00, category: 'Mais Vendidos' },
-          { id: 102, name: 'Porção de Fritas', img: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=200&q=50', price: 35.00, category: 'Mais Vendidos' },
-          { id: 103, name: 'Caipirinha de Limão', img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=50', price: 18.00, category: 'Promoções' },
-          { id: 104, name: 'Combo Boteco', img: 'https://images.unsplash.com/photo-1616489953149-74facafeb81a?w=200&q=50', price: 89.90, category: 'Kits' },
+          { id: 101, name: 'Cerveja Artesanal IPA', description: 'Lata 473ml, amargor médio, notas cítricas e frutadas.', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&q=50', price: 25.00, category: 'Mais Vendidos' },
+          { id: 102, name: 'Porção de Fritas', description: 'Fritas sequinhas com cheddar derretido e bacon crocante.', img: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=200&q=50', price: 35.00, category: 'Mais Vendidos' },
+          { id: 103, name: 'Caipirinha de Limão', description: 'Limão taiti, cachaça especial, açúcar e gelo.', img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&q=50', price: 18.00, category: 'Promoções' },
+          { id: 104, name: 'Combo Boteco', description: 'Porção mista (fritas, calabresa, frango a passarinho) + 2 cervejas long neck.', img: 'https://images.unsplash.com/photo-1616489953149-74facafeb81a?w=200&q=50', price: 89.90, category: 'Kits' },
         ];
       case 'Confeitaria':
         return [
-          { id: 101, name: 'Bolo de Morango', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200&q=50', price: 85.00, category: 'Mais Vendidos' },
-          { id: 102, name: 'Cupcake de Chocolate', img: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=200&q=50', price: 12.50, category: 'Mais Vendidos' },
-          { id: 103, name: 'Macarons Sortidos', img: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=200&q=50', price: 45.00, category: 'Promoções' },
-          { id: 104, name: 'Kit Festa Doce', img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=200&q=50', price: 150.00, category: 'Kits' },
+          { id: 101, name: 'Bolo de Morango', description: 'Massa branca fofinha, recheio de creme branco com morangos frescos.', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200&q=50', price: 85.00, category: 'Mais Vendidos' },
+          { id: 102, name: 'Cupcake de Chocolate', description: 'Massa de cacau com cobertura de ganache e granulados.', img: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=200&q=50', price: 12.50, category: 'Mais Vendidos' },
+          { id: 103, name: 'Macarons Sortidos', description: 'Caixa com 6 unidades de macarons de sabores variados.', img: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=200&q=50', price: 45.00, category: 'Promoções' },
+          { id: 104, name: 'Kit Festa Doce', description: 'Bolo pequeno + 25 brigadeiros + 25 beijinhos.', img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=200&q=50', price: 150.00, category: 'Kits' },
         ];
       case 'Padaria':
         return [
-          { id: 101, name: 'Pão Francês', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&q=50', price: 0.80, category: 'Mais Vendidos' },
-          { id: 102, name: 'Pão de Queijo', img: 'https://images.unsplash.com/photo-1598142980894-6b9432f831b8?w=200&q=50', price: 3.50, category: 'Mais Vendidos' },
-          { id: 103, name: 'Baguete', img: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=200&q=50', price: 8.90, category: 'Promoções' },
-          { id: 104, name: 'Cesta Café da Manhã', img: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=200&q=50', price: 85.00, category: 'Kits' },
+          { id: 101, name: 'Pão Francês', description: 'Saindo quentinho do forno a cada hora.', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&q=50', price: 0.80, category: 'Mais Vendidos' },
+          { id: 102, name: 'Pão de Queijo', description: 'Pão de queijo mineiro tradicional, crocante por fora e macio por dentro.', img: 'https://images.unsplash.com/photo-1598142980894-6b9432f831b8?w=200&q=50', price: 3.50, category: 'Mais Vendidos' },
+          { id: 103, name: 'Baguete', description: 'Baguete rústica de fermentação natural com casca crocante.', img: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=200&q=50', price: 8.90, category: 'Promoções' },
+          { id: 104, name: 'Cesta Café da Manhã', description: 'Pães, frios, café, leite, suco, frutas e doces em cesta especial.', img: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=200&q=50', price: 85.00, category: 'Kits' },
         ];
       case 'Galeteria':
         return [
-          { id: 101, name: 'Galeto Assado', img: 'https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?w=200&q=50', price: 45.00, category: 'Mais Vendidos' },
-          { id: 102, name: 'Frango Frito', img: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=200&q=50', price: 38.00, category: 'Mais Vendidos' },
-          { id: 103, name: 'Polenta Frita', img: 'https://images.unsplash.com/photo-1605333398740-410a70f3f2dd?w=200&q=50', price: 22.00, category: 'Promoções' },
-          { id: 104, name: 'Combo Família', img: 'https://images.unsplash.com/photo-1598515320509-f6b0f14d9b62?w=200&q=50', price: 110.00, category: 'Kits' },
+          { id: 101, name: 'Galeto Assado', description: 'Galeto desossado temperado com ervas e assado na brasa.', img: 'https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?w=200&q=50', price: 45.00, category: 'Mais Vendidos' },
+          { id: 102, name: 'Frango Frito', description: 'Pedaços de frango empanados super crocantes e suculentos.', img: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=200&q=50', price: 38.00, category: 'Mais Vendidos' },
+          { id: 103, name: 'Polenta Frita', description: 'Polenta cremosa por dentro e crocante por fora, com parmesão.', img: 'https://images.unsplash.com/photo-1605333398740-410a70f3f2dd?w=200&q=50', price: 22.00, category: 'Promoções' },
+          { id: 104, name: 'Combo Família', description: '2 Galetos assados + arroz, feijão tropeiro, farofa e vinagrete.', img: 'https://images.unsplash.com/photo-1598515320509-f6b0f14d9b62?w=200&q=50', price: 110.00, category: 'Kits' },
         ];
       case 'Mercadinho':
         return [
-          { id: 101, name: 'Arroz 5kg', img: 'https://images.unsplash.com/photo-1586201375761-83865001e8ac?w=200&q=50', price: 25.90, category: 'Mais Vendidos' },
-          { id: 102, name: 'Feijão 1kg', img: 'https://images.unsplash.com/photo-1551326844-4df70f78d0e9?w=200&q=50', price: 8.50, category: 'Mais Vendidos' },
-          { id: 103, name: 'Leite Integral 1L', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=200&q=50', price: 5.90, category: 'Promoções' },
-          { id: 104, name: 'Cesta Básica', img: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=200&q=50', price: 150.00, category: 'Kits' },
+          { id: 101, name: 'Arroz 5kg', description: 'Arroz branco tipo 1, grãos longos e soltinhos.', img: 'https://images.unsplash.com/photo-1586201375761-83865001e8ac?w=200&q=50', price: 25.90, category: 'Mais Vendidos' },
+          { id: 102, name: 'Feijão 1kg', description: 'Feijão carioca com caldo encorpado e sabor caseiro.', img: 'https://images.unsplash.com/photo-1551326844-4df70f78d0e9?w=200&q=50', price: 8.50, category: 'Mais Vendidos' },
+          { id: 103, name: 'Leite Integral 1L', description: 'Caixa de leite UHT integral, rico em cálcio.', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=200&q=50', price: 5.90, category: 'Promoções' },
+          { id: 104, name: 'Cesta Básica', description: 'Itens essenciais: arroz, feijão, óleo, açúcar, café, macarrão e mais.', img: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=200&q=50', price: 150.00, category: 'Kits' },
         ];
       default:
         return [
-          { id: 101, name: `Especial 1 - ${cat}`, img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 29.90, category: 'Mais Vendidos' },
-          { id: 102, name: `Especial 2 - ${cat}`, img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 39.90, category: 'Lançamentos' },
-          { id: 103, name: `Especial 3 - ${cat}`, img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 49.90, category: 'Promoções' },
-          { id: 104, name: `Kit Exclusivo`, img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 99.90, category: 'Kits' },
+          { id: 101, name: `Especial 1 - ${cat}`, description: 'Produto especial de qualidade, feito para você.', img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 29.90, category: 'Mais Vendidos' },
+          { id: 102, name: `Especial 2 - ${cat}`, description: 'Experimente este lançamento com sabor inigualável.', img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 39.90, category: 'Lançamentos' },
+          { id: 103, name: `Especial 3 - ${cat}`, description: 'Aproveite essa promoção por tempo limitado.', img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 49.90, category: 'Promoções' },
+          { id: 104, name: `Kit Exclusivo`, description: 'Kit completo com tudo que você precisa.', img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=50', price: 99.90, category: 'Kits' },
         ];
     }
   };
@@ -250,44 +250,63 @@ export default function MarketplaceStore() {
         {/* Main Content */}
         <div className="flex-1">
           {/* Search Bar */}
-          <div className="relative mb-8">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="text-store-muted" size={20} />
+          <div className="relative mb-8 group">
+            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none transition-colors duration-300 group-focus-within:text-store-primary text-store-muted">
+              <Search size={20} />
             </div>
             <input 
               type="text" 
-              placeholder="Barra de pesquisa" 
-              className="w-full bg-store-bg border border-store-secondary/50 rounded-full py-4 pl-12 pr-4 focus:outline-none focus:border-store-primary focus:ring-1 focus:ring-store-primary transition-all shadow-sm text-store-text placeholder-store-muted"
+              placeholder={`Buscar em ${storeInfo.name}...`}
+              className="w-full bg-store-secondary/5 border border-store-secondary/20 rounded-2xl py-4 pl-14 pr-14 focus:outline-none focus:bg-store-bg focus:border-store-primary focus:ring-4 focus:ring-store-primary/10 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-md text-store-text placeholder-store-muted/70 text-sm font-medium"
             />
+            <button className="absolute inset-y-0 right-2 my-auto h-10 w-10 flex items-center justify-center rounded-xl bg-store-bg border border-store-secondary/20 text-store-text shadow-sm hover:bg-store-primary hover:text-store-bg hover:border-store-primary transition-all duration-300">
+              <SlidersHorizontal size={18} />
+            </button>
           </div>
 
-          {/* Categories */}
-          <div className="mb-6 relative">
-            <select 
-              value={activeCategory}
-              onChange={(e) => setActiveCategory(e.target.value)}
-              className="w-full appearance-none bg-store-bg border border-store-secondary/50 rounded-xl py-3 pl-4 pr-10 focus:outline-none focus:border-store-primary focus:ring-1 focus:ring-store-primary transition-all shadow-sm text-store-text text-sm font-semibold cursor-pointer"
-            >
+          {/* Categories Horizontal Scroll */}
+          <div className="mb-6 sticky top-[88px] z-30 bg-store-bg/95 backdrop-blur-sm -mx-4 px-4 pt-2 flex items-center relative">
+            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar w-full snap-x snap-mandatory scroll-smooth pr-10">
               {categories.map((cat, idx) => (
-                <option key={idx} value={cat}>{cat}</option>
+                <button 
+                  key={idx} 
+                  onClick={() => setActiveCategory(cat)}
+                  className={`snap-start shrink-0 min-w-[96px] flex flex-col items-center justify-center px-2 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-normal text-center leading-tight transition-all duration-300 border ${
+                    activeCategory === cat 
+                      ? 'bg-store-primary text-store-bg border-store-primary shadow-sm' 
+                      : 'bg-store-secondary/10 text-store-text border-store-secondary/30 hover:border-store-primary/50'
+                  }`}
+                >
+                  {cat}
+                </button>
               ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-store-muted">
-              <ChevronRight className="rotate-90" size={16} />
+            </div>
+            {/* Scroll Indicator */}
+            <div className="absolute right-0 top-2 bottom-4 w-12 text-store-muted flex items-center justify-end pr-4 animate-pulse pointer-events-none bg-gradient-to-l from-store-bg via-store-bg/80 to-transparent">
+              <ChevronRight size={20} />
             </div>
           </div>
 
-          {/* Products Grid */}
-          <div className="grid grid-cols-2 gap-space-4 min-h-[400px] content-start">
+          {/* Products List */}
+          <div className="flex flex-col gap-4 min-h-[400px]">
             {displayedProducts.map((prod) => (
-              <div key={prod.id} className="group bg-store-bg border border-store-secondary/30 rounded-md overflow-hidden hover:border-store-primary/50 transition-all duration-300 hover:shadow-md flex flex-col shadow-sm">
-                <div className="h-28 overflow-hidden relative shrink-0 bg-store-secondary/10">
+              <div key={prod.id} className="group bg-store-bg border border-store-secondary/30 rounded-xl p-3 flex gap-4 hover:border-store-primary/50 transition-all duration-300 hover:shadow-md shadow-sm">
+                <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-store-secondary/10 relative">
                   <img 
                     src={prod.img} 
                     alt={prod.name} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-space-3">
+                </div>
+                <div className="flex flex-col flex-1 min-w-0 justify-between py-1">
+                  <div>
+                    <h3 className="text-body-2 font-bold text-store-text truncate mb-1">{prod.name}</h3>
+                    <p className="text-xs text-store-muted line-clamp-2 leading-tight">
+                      {prod.description || "Delicioso produto selecionado com qualidade especial para você."}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-store-primary font-bold text-body-1">R$ {prod.price.toFixed(2).replace('.', ',')}</span>
                     <button 
                       onClick={() => {
                         const exists = cart.find(i => i.id === prod.id);
@@ -298,27 +317,44 @@ export default function MarketplaceStore() {
                         }
                         setIsCartOpen(true);
                       }}
-                      className="bg-store-primary text-store-bg px-space-4 py-space-2 rounded-pill text-button transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-md border border-store-secondary/20"
+                      className="bg-store-primary/10 text-store-primary hover:bg-store-primary hover:text-store-bg w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0"
                     >
-                      Adicionar
+                      <Plus size={18} />
                     </button>
                   </div>
-                </div>
-                <div className="p-space-3 flex flex-col items-center flex-1 justify-between">
-                  <h3 className="text-body-2 font-semibold text-center mb-1 text-store-text">{prod.name}</h3>
-                  <span className="text-store-primary font-bold text-body-1">R$ {prod.price.toFixed(2).replace('.', ',')}</span>
                 </div>
               </div>
             ))}
             
             {displayedProducts.length === 0 && (
-              <div className="col-span-full py-12 text-center text-store-muted">
-                Nenhum produto encontrado nesta categoria.
+              <div className="flex flex-col items-center justify-center py-12 text-store-muted gap-4">
+                <Search size={48} className="opacity-20" />
+                <p>Nenhum produto encontrado nesta categoria.</p>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Floating Cart Button */}
+      {cart.length > 0 && !isCartOpen && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[448px] z-40">
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="w-full bg-store-primary text-store-bg px-6 py-4 rounded-full flex items-center justify-between shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-store-bg/20 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                {cart.reduce((acc, item) => acc + item.quantity, 0)}
+              </div>
+              <span className="font-semibold text-sm">Ver carrinho</span>
+            </div>
+            <span className="font-bold">
+              R$ {cart.reduce((acc, item) => acc + (item.price * item.quantity), 0).toFixed(2).replace('.', ',')}
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Cart Drawer / Pop-up */}
       {isCartOpen && (
