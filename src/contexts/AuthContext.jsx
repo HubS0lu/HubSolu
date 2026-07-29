@@ -36,6 +36,19 @@ export function AuthProvider({ children }) {
     return mockUser;
   };
 
+  const loginWithGoogle = () => {
+    // Simulate Google login
+    const mockUser = {
+      id: 'google_' + Math.random().toString(36).substr(2, 9),
+      name: 'Google User',
+      email: 'user@gmail.com',
+    };
+    
+    setUser(mockUser);
+    localStorage.setItem('hubsolu_user', JSON.stringify(mockUser));
+    return mockUser;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('hubsolu_user');
@@ -44,6 +57,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     login,
+    loginWithGoogle,
     logout,
     isAuthenticated: !!user,
     loading
