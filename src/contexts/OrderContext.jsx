@@ -32,11 +32,21 @@ export const OrderProvider = ({ children }) => {
     ));
   };
 
+  const deleteOrder = (id) => {
+    setOrders(prev => prev.filter(order => order.id !== id));
+  };
+
+  const clearAllOrders = () => {
+    setOrders([]);
+  };
+
   return (
     <OrderContext.Provider value={{
       orders,
       addOrder,
-      updateOrderStatus
+      updateOrderStatus,
+      deleteOrder,
+      clearAllOrders
     }}>
       {children}
     </OrderContext.Provider>

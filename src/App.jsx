@@ -14,6 +14,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { StoreProvider } from './contexts/StoreContext';
 import { OrderProvider } from './contexts/OrderContext';
+import { FavoritesProvider } from './contexts/FavoritesContext';
 
 function MobileLayout({ children }) {
   return (
@@ -34,7 +35,8 @@ export default function App() {
         <OrderProvider>
           <ThemeProvider>
             <CartProvider>
-              <Router>
+              <FavoritesProvider>
+                <Router>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/cadastro" element={<CadastroPage />} />
@@ -51,7 +53,8 @@ export default function App() {
                   </MobileLayout>
                 } />
               </Routes>
-            </Router>
+                </Router>
+              </FavoritesProvider>
             </CartProvider>
           </ThemeProvider>
         </OrderProvider>

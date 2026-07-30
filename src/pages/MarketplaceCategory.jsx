@@ -3,6 +3,7 @@ import { ChevronLeft, ArrowLeft, Search, Heart, Star, Clock, MapPin, SlidersHori
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import MarketplaceBottomNav from '../components/MarketplaceBottomNav';
 import { useStore } from '../contexts/StoreContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 export default function MarketplaceCategory() {
   const location = useLocation();
@@ -11,7 +12,7 @@ export default function MarketplaceCategory() {
   const categoryImg = location.state?.categoryImg || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80';
 
   const { getStoresByCategory } = useStore();
-  const [favorites, setFavorites] = useState(['burger-co']); 
+  const { favorites, toggleFavorite } = useFavorites();
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -38,13 +39,9 @@ export default function MarketplaceCategory() {
     window.scrollTo(0, 0);
   }, [location]);
 
-  const toggleFavorite = (e, id) => {
+  const handleToggleFavorite = (e, id) => {
     e.stopPropagation();
-    if (favorites.includes(id)) {
-      setFavorites(favorites.filter(favId => favId !== id));
-    } else {
-      setFavorites([...favorites, id]);
-    }
+    toggleFavorite(id);
   };
 
   const filters = ['Todos', 'Entrega Grátis', 'Mais Rápidos', 'Melhor Avaliados'];
@@ -166,7 +163,7 @@ export default function MarketplaceCategory() {
 
                 {/* Favorite Heart Button */}
                 <button 
-                  onClick={(e) => toggleFavorite(e, store.id)}
+                  onClick={(e) => handleToggleFavorite(e, store.id)}
                   className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-[#f1f3f5] transition-colors"
                 >
                   <Heart 

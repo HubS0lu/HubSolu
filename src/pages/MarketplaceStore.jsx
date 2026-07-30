@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, ChevronLeft, ChevronRight, ArrowLeft, Minus, Plus, Trash2, X, Instagram, SlidersHorizontal } from 'lucide-react';
+import { ShoppingCart, Search, ChevronLeft, ChevronRight, ArrowLeft, Minus, Plus, Trash2, X, Instagram, SlidersHorizontal, Heart } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useStore } from '../contexts/StoreContext';
 import { useOrders } from '../contexts/OrderContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 export default function MarketplaceStore() {
   const location = useLocation();
@@ -27,10 +28,11 @@ export default function MarketplaceStore() {
   const products = getProductsByStore(storeId);
   const categories = ['Todos', ...new Set(products.map(p => p.category))];
 
-  const [activeTheme, setActiveTheme] = useState(storeInfo.theme);
+  const [activeTheme, setActiveTheme] = useState(() => {
+    return localStorage.getItem('store_theme') || storeInfo.theme;
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('Todos');
-  const [currentPage, setCurrentPage] = useState(0);
   const [storeInstagram, setStoreInstagram] = useState('@loja.oficial');
   
   // Checkout Form State
@@ -42,11 +44,16 @@ export default function MarketplaceStore() {
   }, [location]);
 
   useEffect(() => {
-    setActiveTheme(storeInfo.theme);
+    const savedTheme = localStorage.getItem('store_theme');
+    setActiveTheme(savedTheme || storeInfo.theme);
   }, [storeInfo.theme]);
 
   const { cart, addToCart, updateQuantity, removeFromCart, totalItems, totalValue, clearCart } = useCart();
   const { addOrder } = useOrders();
+  const { user, isAuthenticated } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  const isFav = isFavorite(storeInfo.id);
 
   // Filtragem por Categoria
   const filteredProducts = activeCategory === 'Todos' 
@@ -56,14 +63,6 @@ export default function MarketplaceStore() {
   // Removida Paginação
   const displayedProducts = filteredProducts;
 
-  const nextPage = () => setCurrentPage(p => Math.min(totalPages - 1, p + 1));
-  const prevPage = () => setCurrentPage(p => Math.max(0, p - 1));
-
-  // Reset page when category changes
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [activeCategory]);
-  
   const handleCheckout = () => {
     if (!isAuthenticated) {
       navigate('/cadastro', { state: { from: location } });
@@ -128,7 +127,16 @@ export default function MarketplaceStore() {
             </a>
           </div>
         </div>
-        <div className="relative">
+        <div className="flex items-center gap-2 relative">
+          <button 
+            onClick={() => toggleFavorite(storeInfo.id)}
+            className="p-3 rounded-full hover:bg-store-primary/10 transition-colors relative"
+          >
+            <Heart 
+              size={24} 
+              className={`transition-all duration-300 ${isFav ? 'text-[#e03131] fill-[#e03131] scale-110' : 'text-store-text'}`} 
+            />
+          </button>
           <button 
             onClick={() => setIsCartOpen(true)}
             className="p-3 rounded-full hover:bg-store-primary/10 transition-colors relative text-store-text"
@@ -143,7 +151,34 @@ export default function MarketplaceStore() {
         </div>
       </header>
 
-      <div className="flex-1 w-full px-4 py-6 flex-col overflow-y-auto">
+      {/* Store Banner & Info Section */}
+      {storeInfo.banner && (
+        <div className="w-full h-48 md:h-56 relative overflow-hidden shrink-0">
+          <img 
+            src={storeInfo.banner} 
+            alt={`Banner ${storeInfo.name}`} 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-store-bg to-transparent pointer-events-none"></div>
+        </div>
+      )}
+
+      <div className="px-5 pt-3 pb-5 flex flex-col gap-2 shrink-0 border-b border-store-secondary/10">
+        <p className="text-sm text-store-text/80 leading-relaxed">{storeInfo.description}</p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-1 text-xs font-bold text-store-muted">
+          <span className="flex items-center gap-1 bg-store-secondary/20 px-2 py-1 rounded-md text-store-primary">
+            ★ {storeInfo.rating}
+          </span>
+          <span className="opacity-50">•</span>
+          <span>{storeInfo.category} - {storeInfo.subCategory || storeInfo.segment}</span>
+          <span className="opacity-50">•</span>
+          <span>{storeInfo.deliveryTime || '30-45 min'}</span>
+          <span className="opacity-50">•</span>
+          <span>{storeInfo.deliveryFee === 0 ? 'Entrega Grátis' : `Entrega R$ ${storeInfo.deliveryFee?.toFixed(2).replace('.', ',') || '5,90'}`}</span>
+        </div>
+      </div>
+
+      <div className="flex-1 w-full px-4 py-6 flex flex-col overflow-y-auto">
         {/* Main Content */}
         <div className="flex-1">
           {/* Search Bar */}
@@ -206,7 +241,7 @@ export default function MarketplaceStore() {
                     <span className="text-store-primary font-bold text-body-1">R$ {prod.price.toFixed(2).replace('.', ',')}</span>
                     <button 
                       onClick={() => {
-                        addToCart(prod, 1, storeInfo.name);
+                        addToCart({ ...prod, storeName: storeInfo.name }, 1, storeInfo.id);
                         setIsCartOpen(true);
                       }}
                       className="bg-store-primary/10 text-store-primary hover:bg-store-primary hover:text-store-bg w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0"

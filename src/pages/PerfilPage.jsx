@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useOrders } from '../contexts/OrderContext';
+import { useStore } from '../contexts/StoreContext';
+import ImageCropModal from '../components/ImageCropModal';
 
 const themeCategories = [
   { id: 'food', label: 'Alimentação' },
@@ -64,20 +66,27 @@ const comandasMock = [
   { id: 'CMD-004', customer: 'Lucas Santos', status: 'fila', time: '20 min', items: [{ name: '2x Hot Dog', obs: 'Sem mostarda' }] }
 ];
 
-// Mock Data for Produtos Loja
-const produtosLojaMock = [
-  { id: 1, name: 'X-Bacon', price: 'R$ 25,00', category: 'Lanches' },
-  { id: 2, name: 'X-Salada', price: 'R$ 20,00', category: 'Lanches' },
-  { id: 3, name: 'Coca-Cola 350ml', price: 'R$ 5,00', category: 'Bebidas' }
-];
+// Removed local mock data
+const PRODUCT_CATEGORIES = {
+  'Alimentação': ['Mais Vendidos', 'Promoções', 'Lanches', 'Pizzas', 'Bebidas', 'Sobremesas', 'Acompanhamentos', 'Combos'],
+  'Roupas': ['Lançamentos', 'Promoções', 'Masculino', 'Feminino', 'Infantil', 'Calçados', 'Acessórios'],
+  'Mercado': ['Hortifruti', 'Carnes', 'Bebidas', 'Limpeza', 'Higiene', 'Mercearia', 'Promoções'],
+  'default': ['Destaques', 'Mais Vendidos', 'Geral', 'Promoções']
+};
 
 export default function PerfilPage() {
-  const [activeTab, setActiveTab] = useState('visao_geral');
+  const [activeTab, setActiveTab] = useState('cozinha');
   const [activeCategory, setActiveCategory] = useState('food');
   const [activeTheme, setActiveTheme] = useState('theme-fashion-minimalist');
   const [showStripeModal, setShowStripeModal] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  
   const { orders, updateOrderStatus } = useOrders();
-  const [produtos, setProdutos] = useState(produtosLojaMock);
+  const { getProductsByStore, addProduct, updateProduct, deleteProduct: removeProductFromStore, getStoreById, updateStore } = useStore();
+  
+  const myProducts = getProductsByStore('burger-co');
+  const myStore = getStoreById('burger-co');
+  const storeOrders = orders.filter(o => o.storeId === 'burger-co');
 
   // --- Novos Estados ---
   const [userData, setUserData] = useState({
@@ -88,62 +97,110 @@ export default function PerfilPage() {
   });
 
   const [storeData, setStoreData] = useState({
-    name: "João Burguer's",
-    segment: "Lanchonete / Fast Food",
-    description: "O melhor hambúrguer artesanal da região. Ingredientes frescos e selecionados.",
-    address: "Rua das Flores, 123 - Centro",
-    hours: "Seg a Sáb - 18h às 23h30"
+    name: myStore?.name || "João Burguer's",
+    segment: myStore?.category || "Lanchonete / Fast Food",
+    description: myStore?.description || "O melhor hambúrguer artesanal da região. Ingredientes frescos e selecionados.",
+    address: myStore?.address || "Rua das Flores, 123 - Centro",
+    hours: myStore?.hours || "Seg a Sáb - 18h às 23h30"
   });
 
-  const [logoPreview, setLogoPreview] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(myStore?.logo || null);
+  const [bannerPreview, setBannerPreview] = useState(myStore?.banner || null);
   
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // Estado do modal de crop
+  const [cropData, setCropData] = useState({ src: null, type: null, aspect: 1 });
 
   // --- Funções ---
   const handleSaveUserData = () => {
     localStorage.setItem('store_instagram', userData.instagram);
     alert("Dados pessoais salvos com sucesso!");
   };
-  const handleSaveStoreData = () => alert("Dados da loja salvos com sucesso!");
+  
+  const handleSaveStoreData = () => {
+    if (myStore) {
+      updateStore({
+        ...myStore,
+        name: storeData.name,
+        category: storeData.segment,
+        description: storeData.description,
+        address: storeData.address, // Added for future use, mockData didn't have it
+        hours: storeData.hours,     // Added for future use
+        logo: logoPreview || myStore.logo,
+        banner: bannerPreview || myStore.banner
+      });
+    }
+    alert("Dados da loja salvos com sucesso!");
+  };
 
-  const handleLogoUpload = (e) => {
+  const handleUploadClick = (e, type, aspect) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 2 * 1024 * 1024) return alert("A imagem não pode exceder 2MB para poupar memória.");
-      setLogoPreview(URL.createObjectURL(file));
+      setCropData({ src: URL.createObjectURL(file), type, aspect });
+      e.target.value = ''; // Reset
     }
   };
 
-  const handleBannerUpload = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 2 * 1024 * 1024) return alert("A imagem não pode exceder 2MB para poupar memória.");
-      setBannerPreview(URL.createObjectURL(file));
+  const handleCropComplete = (croppedImage) => {
+    if (cropData.type === 'logo') {
+      setLogoPreview(croppedImage);
+    } else if (cropData.type === 'banner') {
+      setBannerPreview(croppedImage);
+    } else if (cropData.type === 'product') {
+      setEditingProduct({ ...editingProduct, image: croppedImage });
     }
+    setCropData({ src: null, type: null, aspect: 1 });
   };
 
   const openAddProduct = () => {
-    setEditingProduct({ name: '', category: '', price: '', image: null });
+    setEditingProduct({ name: '', category: '', description: '', price: '', image: null });
+    setIsCustomCategory(false);
     setIsProductModalOpen(true);
   };
 
   const openEditProduct = (produto) => {
-    setEditingProduct({ ...produto });
+    let displayPrice = produto.price;
+    if (typeof produto.price === 'number') {
+      displayPrice = `R$ ${produto.price.toFixed(2).replace('.', ',')}`;
+    }
+    setEditingProduct({ ...produto, price: displayPrice, image: produto.img || produto.image });
+    
+    // Check if product category is in predefined list
+    const availableCategories = PRODUCT_CATEGORIES[storeData.segment] || PRODUCT_CATEGORIES['default'];
+    setIsCustomCategory(produto.category && !availableCategories.includes(produto.category));
+    
     setIsProductModalOpen(true);
   };
 
   const saveProduct = () => {
-    if (editingProduct.id) {
-      setProdutos(produtos.map(p => p.id === editingProduct.id ? editingProduct : p));
+    let parsedPrice = 0;
+    if (typeof editingProduct.price === 'string') {
+      const priceStr = editingProduct.price.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+      parsedPrice = parseFloat(priceStr);
     } else {
-      setProdutos([...produtos, { ...editingProduct, id: Date.now() }]);
+      parsedPrice = editingProduct.price;
+    }
+    if (isNaN(parsedPrice)) parsedPrice = 0;
+
+    const productToSave = {
+      ...editingProduct,
+      price: parsedPrice,
+      storeId: 'burger-co',
+      img: editingProduct.image || editingProduct.img
+    };
+
+    if (editingProduct.id) {
+      updateProduct(productToSave);
+    } else {
+      addProduct({ ...productToSave, id: 'p_' + Date.now() });
     }
     setIsProductModalOpen(false);
   };
 
-  const deleteProduct = (id) => setProdutos(produtos.filter(p => p.id !== id));
+  const deleteProduct = (id) => removeProductFromStore(id);
 
   const navigate = useNavigate();
 
@@ -189,9 +246,9 @@ export default function PerfilPage() {
         {/* Minimalist Tabs */}
         <div className="flex justify-center gap-3">
           {[
-            { id: 'visao_geral', label: 'Visão Geral', icon: BarChart3 },
             { id: 'cozinha', label: 'Cozinha', icon: ChefHat },
             { id: 'loja', label: 'Loja', icon: Store },
+            { id: 'visao_geral', label: 'Visão Geral', icon: BarChart3 },
             { id: 'assinatura', label: 'Assinatura', icon: CreditCard },
             { id: 'dados', label: 'Dados', icon: User }
           ].map((tab) => {
@@ -230,13 +287,10 @@ export default function PerfilPage() {
                 <p className="text-[10px] text-[#6c757d] mt-1">+12% este mês</p>
               </div>
               
-              <div className="bg-[#f1f3f5] p-4 rounded-2xl border border-[#e9ecef]">
-                <div className="flex items-center gap-2 text-[#495057] mb-2">
-                  <ShoppingBag size={16} />
-                  <h3 className="text-xs font-semibold uppercase tracking-wider">Pedidos</h3>
-                </div>
-                <p className="text-2xl font-bold text-[#212529]">{orders.length > 0 ? orders.length : metrics.totalOrders}</p>
-                <p className="text-[10px] text-[#6c757d] mt-1">+5% este mês</p>
+              <div className="bg-[#f1f3f5] p-5 rounded-2xl border border-[#e9ecef] shadow-sm">
+                <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Total de Pedidos</p>
+                <p className="text-2xl font-bold text-[#212529]">{storeOrders.length > 0 ? storeOrders.length : metrics.totalOrders}</p>
+                <p className="text-[10px] text-[#2b8a3e] mt-1 font-bold">+12% esta semana</p>
               </div>
             </div>
 
@@ -409,22 +463,22 @@ export default function PerfilPage() {
               <h2 className="text-[#212529] font-bold text-xl">Gestão de Comandas</h2>
             </div>
             
-            <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
+            <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory">
               {[
                 { id: 0, label: 'Na Fila', color: 'bg-[#f1f3f5]', borderColor: 'border-[#ced4da]' },
                 { id: 1, label: 'Preparando', color: 'bg-[#fff4e6]', borderColor: 'border-[#ffd8a8]' },
                 { id: 2, label: 'Pronto', color: 'bg-[#ebfbee]', borderColor: 'border-[#b2f2bb]' }
               ].map(coluna => (
-                <div key={coluna.id} className={`flex-none w-80 snap-start flex flex-col h-[calc(100vh-280px)] min-h-[400px] bg-[#f8f9fa] rounded-2xl border ${coluna.borderColor} overflow-hidden shadow-sm`}>
+                <div key={coluna.id} className={`flex-none w-[85vw] max-w-sm snap-center snap-always flex flex-col h-[calc(100vh-280px)] min-h-[400px] bg-[#f8f9fa] rounded-2xl border ${coluna.borderColor} overflow-hidden shadow-sm`}>
                   <div className={`px-4 py-3 border-b ${coluna.borderColor} ${coluna.color} font-bold text-[#495057] uppercase text-xs tracking-wider flex justify-between items-center`}>
                     {coluna.label}
                     <span className="bg-white/50 text-[#495057] px-2 py-0.5 rounded-full text-[10px]">
-                      {orders.filter(c => c.status === coluna.id).length}
+                      {storeOrders.filter(c => c.status === coluna.id).length}
                     </span>
                   </div>
                   
                   <div className="p-3 flex-1 overflow-y-auto space-y-3">
-                    {orders.filter(c => c.status === coluna.id).map(comanda => (
+                    {storeOrders.filter(c => c.status === coluna.id).map(comanda => (
                       <div key={comanda.id} className="bg-white p-4 rounded-xl shadow-sm border border-[#e9ecef] flex flex-col gap-3 transition-transform hover:-translate-y-0.5">
                         <div className="flex justify-between items-start">
                           <div>
@@ -473,7 +527,7 @@ export default function PerfilPage() {
                         </div>
                       </div>
                     ))}
-                    {orders.filter(c => c.status === coluna.id).length === 0 && (
+                    {storeOrders.filter(c => c.status === coluna.id).length === 0 && (
                       <div className="h-full flex items-center justify-center">
                         <p className="text-xs text-[#adb5bd] font-medium text-center">Nenhuma comanda</p>
                       </div>
@@ -508,7 +562,7 @@ export default function PerfilPage() {
                           <span className="text-[10px] font-bold mt-1">Logo</span>
                         </>
                       )}
-                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                      <input type="file" accept="image/*" onChange={(e) => handleUploadClick(e, 'logo', 1)} className="hidden" />
                     </label>
                     <label className="flex-1 h-20 bg-[#e9ecef] rounded-2xl border border-[#ced4da] flex flex-col items-center justify-center text-[#868e96] cursor-pointer hover:bg-[#dee2e6] transition-colors overflow-hidden relative">
                       {bannerPreview ? (
@@ -519,7 +573,7 @@ export default function PerfilPage() {
                           <span className="text-[10px] font-bold mt-1">Banner de Capa</span>
                         </>
                       )}
-                      <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+                      <input type="file" accept="image/*" onChange={(e) => handleUploadClick(e, 'banner', 16/9)} className="hidden" />
                     </label>
                   </div>
                 </div>
@@ -560,21 +614,21 @@ export default function PerfilPage() {
               </div>
 
               <div className="space-y-2">
-                {produtos.map(produto => (
+                {myProducts.map(produto => (
                   <div key={produto.id} className="bg-white p-3 rounded-xl border border-[#e9ecef] shadow-sm flex items-center gap-3">
                     <div className="text-[#adb5bd] cursor-grab active:cursor-grabbing">
                       <GripVertical size={16} />
                     </div>
                     <div className="w-10 h-10 bg-[#f1f3f5] rounded-lg border border-[#e9ecef] flex items-center justify-center shrink-0 overflow-hidden">
-                      {produto.image ? (
-                        <img src={produto.image} alt={produto.name} className="w-full h-full object-cover" />
+                      {(produto.image || produto.img) ? (
+                        <img src={produto.image || produto.img} alt={produto.name} className="w-full h-full object-cover" />
                       ) : (
                         <Image size={16} className="text-[#adb5bd]" />
                       )}
                     </div>
                     <div className="flex-1">
                       <h4 className="text-sm font-bold text-[#212529] leading-none">{produto.name}</h4>
-                      <p className="text-[10px] text-[#6c757d] mt-1">{produto.category} • {produto.price}</p>
+                      <p className="text-[10px] text-[#6c757d] mt-1">{produto.category} • {typeof produto.price === 'number' ? `R$ ${produto.price.toFixed(2).replace('.', ',')}` : produto.price}</p>
                     </div>
                     <div className="flex items-center gap-1">
                       <button onClick={() => openEditProduct(produto)} className="p-1.5 text-[#495057] hover:bg-[#e9ecef] rounded-lg transition-colors">
@@ -729,16 +783,7 @@ export default function PerfilPage() {
                     <span className="text-[10px] font-bold mt-1">Foto</span>
                   </>
                 )}
-                <input type="file" accept="image/*" onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    const file = e.target.files[0];
-                    if (file.size > 2 * 1024 * 1024) {
-                      alert("A imagem do produto não pode exceder 2MB para poupar memória.");
-                      return;
-                    }
-                    setEditingProduct({ ...editingProduct, image: URL.createObjectURL(file) });
-                  }
-                }} className="hidden" />
+                <input type="file" accept="image/*" onChange={(e) => handleUploadClick(e, 'product', 1)} className="hidden" />
               </label>
             </div>
 
@@ -754,12 +799,44 @@ export default function PerfilPage() {
             
             <div>
               <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-2">Categoria</label>
-              <input 
-                type="text" 
-                value={editingProduct?.category || ''} 
-                onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
-                className="w-full bg-white border border-[#ced4da] rounded-xl px-4 py-3 text-[#212529] text-sm focus:outline-none focus:border-[#adb5bd]" 
-              />
+              <div className="relative">
+                <select 
+                  value={isCustomCategory ? 'Outra...' : (editingProduct?.category || '')} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'Outra...') {
+                      setIsCustomCategory(true);
+                      setEditingProduct({...editingProduct, category: ''});
+                    } else {
+                      setIsCustomCategory(false);
+                      setEditingProduct({...editingProduct, category: val});
+                    }
+                  }}
+                  className="w-full bg-white border border-[#ced4da] rounded-xl px-4 py-3 text-[#212529] text-sm focus:outline-none focus:border-[#adb5bd] appearance-none" 
+                >
+                  <option value="" disabled>Selecione uma categoria</option>
+                  {(PRODUCT_CATEGORIES[storeData.segment] || PRODUCT_CATEGORIES['default']).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="Outra...">Outra...</option>
+                </select>
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-[#adb5bd]">
+                  <ChevronRight size={16} className="rotate-90" />
+                </div>
+              </div>
+              
+              {isCustomCategory && (
+                <div className="mt-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                  <input 
+                    type="text" 
+                    placeholder="Digite a categoria personalizada"
+                    value={editingProduct?.category || ''} 
+                    onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                    className="w-full bg-[#f8f9fa] border border-[#ced4da] rounded-xl px-4 py-3 text-[#212529] text-sm focus:outline-none focus:border-[#adb5bd]" 
+                    autoFocus
+                  />
+                </div>
+              )}
             </div>
 
             <div>
@@ -769,6 +846,16 @@ export default function PerfilPage() {
                 value={editingProduct?.price || ''} 
                 onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})}
                 className="w-full bg-white border border-[#ced4da] rounded-xl px-4 py-3 text-[#212529] text-sm focus:outline-none focus:border-[#adb5bd]" 
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-2">Descrição (Opcional)</label>
+              <textarea 
+                value={editingProduct?.description || ''} 
+                onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})}
+                placeholder="Detalhes sobre o produto (ingredientes, tamanho, etc.)"
+                className="w-full bg-white border border-[#ced4da] rounded-xl px-4 py-3 text-[#212529] text-sm focus:outline-none focus:border-[#adb5bd] resize-none h-24" 
               />
             </div>
 
@@ -788,6 +875,16 @@ export default function PerfilPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* CROP MODAL */}
+      {cropData.src && (
+        <ImageCropModal 
+          imageSrc={cropData.src} 
+          aspect={cropData.aspect}
+          onCropComplete={handleCropComplete} 
+          onClose={() => setCropData({ src: null, type: null, aspect: 1 })}
+        />
       )}
     </div>
   );

@@ -17,6 +17,20 @@ export const CartProvider = ({ children }) => {
 
   // Add item to cart or increment quantity
   const addToCart = (product, quantity = 1, storeId = null) => {
+    // Definir qual é o storeId deste produto
+    const productStoreId = storeId || product.storeId;
+    
+    // Verificar se já tem itens de outra loja no carrinho
+    if (cart.length > 0 && productStoreId) {
+      const existingStoreId = cart[0].storeId;
+      if (existingStoreId && existingStoreId !== productStoreId) {
+        if (window.confirm('Você só pode adicionar itens de uma loja por vez. Deseja limpar o carrinho atual e adicionar este produto da nova loja?')) {
+          setCart([{ ...product, quantity, storeId: productStoreId }]);
+        }
+        return;
+      }
+    }
+
     setCart(prev => {
       // Find if item already exists
       const existingItem = prev.find(item => item.id === product.id);
@@ -28,7 +42,7 @@ export const CartProvider = ({ children }) => {
         );
       }
       // Add new item
-      return [...prev, { ...product, quantity, storeId }];
+      return [...prev, { ...product, quantity, storeId: productStoreId }];
     });
   };
 

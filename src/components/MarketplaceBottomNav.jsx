@@ -1,30 +1,92 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Heart, Package, X, Store, Minus, Plus, ChevronRight, Clock, Truck, Store as StoreIcon } from 'lucide-react';
+import { ShoppingCart, Heart, Package, X, Store, Minus, Plus, ChevronRight, Clock, Truck, Store as StoreIcon, Trash2 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useOrders } from '../contexts/OrderContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useFavorites } from '../contexts/FavoritesContext';
+import { useStore } from '../contexts/StoreContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function MarketplaceBottomNav() {
   const [activeModal, setActiveModal] = useState(null); // 'cart', 'favorites', 'tracking', or null
-  const { cart, updateQuantity, totalValue, totalItems } = useCart();
-  const { orders } = useOrders();
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
+  
+  const { cart, updateQuantity, totalValue, totalItems, clearCart } = useCart();
+  const { orders, addOrder, deleteOrder, clearAllOrders } = useOrders();
+  const { user, isAuthenticated } = useAuth();
+  const { favorites, toggleFavorite } = useFavorites();
+  const { getStoreById } = useStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // --- MOCK DATA ---
+  const favoriteStores = favorites.map(id => getStoreById(id)).filter(Boolean);
 
-  const favoriteStores = [
-    { id: 1, name: 'Hamburgueria Grill', category: 'Alimentação', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&q=50' },
-    { id: 2, name: 'Moda Fashion', category: 'Roupas', img: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=200&q=50' }
-  ];
+  const [address, setAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('PIX');
+
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      navigate('/cadastro', { state: { from: location } });
+      return;
+    }
+    
+    if (!address) {
+      alert("Por favor, preencha o endereço de entrega.");
+      return;
+    }
+
+    if (cart.length === 0) return;
+
+    const total = totalValue.toFixed(2).replace('.', ',');
+    
+    // Pegar os dados reais da loja do primeiro item (o carrinho agora é restrito a uma loja)
+    const storeId = cart[0].storeId;
+    const storeName = cart[0].storeName || 'Loja Parceira';
+    const store = getStoreById(storeId);
+    const storeLogo = store ? store.logo : 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=200&q=80';
+    
+    addOrder({
+      storeId,
+      storeName,
+      storeLogo,
+      items: cart,
+      total: totalValue,
+      address,
+      paymentMethod,
+    });
+    
+    clearCart();
+    setActiveModal(null);
+
+    let message = `*NOVO PEDIDO - ${storeName}*\n`;
+    message += `Cliente: ${user.name}\n`;
+    message += `Endereço: ${address}\n`;
+    message += `Pagamento: ${paymentMethod}\n\n`;
+    message += `*Itens:*\n`;
+    
+    cart.forEach(item => {
+      message += `${item.quantity}x ${item.name} (R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')})\n`;
+    });
+    
+    message += `\n*Total: R$ ${total}*`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const mockWhatsAppNumber = "5511999999999"; 
+    window.open(`https://wa.me/${mockWhatsAppNumber}?text=${encodedMessage}`, '_blank');
+  };
+
+  const handleTalkToSeller = (order) => {
+    const customerName = user?.name || 'Cliente';
+    const message = `Olá! Sou ${customerName}. Gostaria de falar sobre o meu pedido *${order.id}* na sua loja.\n\nVocê pode me ajudar?`;
+    const encodedMessage = encodeURIComponent(message);
+    const mockWhatsAppNumber = "5511999999999"; 
+    window.open(`https://wa.me/${mockWhatsAppNumber}?text=${encodedMessage}`, '_blank');
+  };
 
   // --- RENDER HELPERS ---
   const renderTimeline = (order) => {
-    let steps = [];
-    if (order.type === 'food_pickup') {
-      steps = ['Recebido', 'Preparando', 'Para Retirada', 'Concluído'];
-    } else if (order.type === 'food_delivery') {
-      steps = ['Recebido', 'Preparando', 'Em Entrega', 'Concluído'];
-    } else {
-      steps = ['Aprovado', 'Embalando', 'Em Trânsito', 'Entregue'];
-    }
+    // Alinhado exatamente com o status do painel da cozinha
+    const steps = ['Na Fila', 'Preparando', 'Pronto', 'Entregue'];
 
     return (
       <div className="flex justify-between items-center w-full mt-4 relative before:absolute before:inset-0 before:top-[11px] before:-translate-y-1/2 before:h-0.5 before:bg-[#e9ecef] before:z-0">
@@ -90,7 +152,34 @@ export default function MarketplaceBottomNav() {
             ))
           )}
         </div>
-        <div className="p-6 bg-white border-t border-[#e9ecef] rounded-t-3xl shadow-[0_-4px_20px_rgb(0,0,0,0.05)]">
+        <div className="p-6 bg-white border-t border-[#e9ecef] rounded-t-3xl shadow-[0_-4px_20px_rgb(0,0,0,0.05)] mt-auto">
+          {cart.length > 0 && (
+            <div className="mb-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-[#495057] mb-1">Endereço de Entrega</label>
+                <input 
+                  type="text" 
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Rua, Número, Bairro, Cidade"
+                  className="w-full bg-[#f8f9fa] border border-[#ced4da] rounded-xl p-2.5 focus:outline-none focus:border-[#343a40] focus:ring-1 focus:ring-[#343a40] text-sm text-[#212529] placeholder-[#adb5bd]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#495057] mb-1">Forma de Pagamento</label>
+                <select 
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full bg-[#f8f9fa] border border-[#ced4da] rounded-xl p-2.5 focus:outline-none focus:border-[#343a40] focus:ring-1 focus:ring-[#343a40] text-sm text-[#212529] appearance-none"
+                >
+                  <option value="PIX">PIX</option>
+                  <option value="Cartão de Crédito">Cartão de Crédito</option>
+                  <option value="Cartão de Débito">Cartão de Débito</option>
+                  <option value="Dinheiro">Dinheiro</option>
+                </select>
+              </div>
+            </div>
+          )}
           <div className="flex justify-between mb-2 text-[#495057] text-sm">
             <span>Subtotal</span>
             <span className="font-semibold">R$ {totalValue.toFixed(2).replace('.', ',')}</span>
@@ -103,8 +192,12 @@ export default function MarketplaceBottomNav() {
             <span>Total</span>
             <span>R$ {totalValue.toFixed(2).replace('.', ',')}</span>
           </div>
-          <button className="w-full py-4 rounded-xl bg-[#343a40] text-white font-bold text-[15px] hover:bg-[#212529] transition-colors shadow-lg flex items-center justify-center gap-2">
-            Finalizar Compra <ChevronRight size={18} />
+          <button 
+            disabled={cart.length === 0}
+            onClick={handleCheckout}
+            className="w-full py-4 rounded-xl bg-[#343a40] text-white font-bold text-[15px] hover:bg-[#212529] transition-colors shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isAuthenticated ? 'Finalizar Compra no WhatsApp' : 'Fazer Login para Finalizar'}
           </button>
         </div>
       </div>
@@ -120,16 +213,39 @@ export default function MarketplaceBottomNav() {
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           <h3 className="text-xs font-bold text-[#adb5bd] uppercase tracking-wider mb-2">Lojas Curtidas</h3>
-          {favoriteStores.map(store => (
-            <div key={store.id} className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-[#e9ecef] shadow-sm">
-              <img src={store.img} alt={store.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#f8f9fa] shadow-sm" />
-              <div className="flex-1">
-                <h4 className="text-sm font-bold text-[#212529]">{store.name}</h4>
-                <p className="text-xs text-[#6c757d]">{store.category}</p>
-              </div>
-              <button className="px-4 py-2 bg-[#f1f3f5] text-[#495057] text-xs font-bold rounded-lg hover:bg-[#e9ecef] transition-colors">Visitar</button>
+          {favoriteStores.length === 0 ? (
+            <div className="text-center py-10 text-[#adb5bd]">
+              <Heart size={48} className="mx-auto mb-4 opacity-50" />
+              <p>Nenhuma loja favorita ainda.</p>
             </div>
-          ))}
+          ) : (
+            favoriteStores.map(store => (
+              <div key={store.id} className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-[#e9ecef] shadow-sm">
+                <img src={store.logo} alt={store.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#f8f9fa] shadow-sm" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-[#212529] truncate">{store.name}</h4>
+                  <p className="text-xs text-[#6c757d] truncate">{store.category}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => toggleFavorite(store.id)}
+                    className="p-2 rounded-full text-[#e03131] hover:bg-[#ffe3e3] transition-colors"
+                  >
+                    <Heart size={18} className="fill-[#e03131]" />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setActiveModal(null);
+                      navigate('/marketplace/store', { state: { storeId: store.id } });
+                    }}
+                    className="px-4 py-2 bg-[#f1f3f5] text-[#495057] text-xs font-bold rounded-lg hover:bg-[#e9ecef] transition-colors"
+                  >
+                    Visitar
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -140,7 +256,14 @@ export default function MarketplaceBottomNav() {
         </div>
         <div className="px-6 pb-4 flex justify-between items-center border-b border-[#e9ecef]">
           <h2 className="text-xl font-bold text-[#212529] flex items-center gap-2"><Package size={24} className="text-[#495057]" /> Meus Pedidos</h2>
-          <button onClick={() => setActiveModal(null)} className="p-2 rounded-full bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef] transition-colors"><X size={20} /></button>
+          <div className="flex gap-2">
+            {orders.length > 0 && (
+              <button onClick={() => clearAllOrders()} className="p-2 rounded-full bg-[#fff5f5] text-[#e03131] hover:bg-[#ffe3e3] transition-colors" title="Limpar Histórico">
+                <Trash2 size={20} />
+              </button>
+            )}
+            <button onClick={() => setActiveModal(null)} className="p-2 rounded-full bg-[#f1f3f5] text-[#495057] hover:bg-[#e9ecef] transition-colors"><X size={20} /></button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           {orders.length === 0 ? (
@@ -170,9 +293,49 @@ export default function MarketplaceBottomNav() {
                 
                 {renderTimeline({ ...order, type: 'food_delivery' })}
 
-                <div className="pt-2">
-                  <button className="w-full py-2.5 rounded-xl border-2 border-[#e9ecef] text-[#495057] text-xs font-bold hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 shadow-sm">
+                {/* Botão de ver detalhes do pedido */}
+                <button 
+                  onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                  className="w-full py-1.5 flex items-center justify-center gap-1 text-[11px] font-bold text-[#adb5bd] hover:text-[#495057] transition-colors"
+                >
+                  {expandedOrderId === order.id ? 'Ocultar Detalhes' : 'Ver Detalhes do Pedido'}
+                  <ChevronRight size={14} className={`transition-transform duration-300 ${expandedOrderId === order.id ? 'rotate-90' : ''}`} />
+                </button>
+
+                {/* Detalhes Expandidos */}
+                {expandedOrderId === order.id && (
+                  <div className="bg-[#f8f9fa] rounded-xl p-3 border border-[#f1f3f5] animate-in fade-in slide-in-from-top-2 duration-300">
+                    <ul className="space-y-2 mb-3">
+                      {order.items?.map((item, idx) => (
+                        <li key={idx} className="text-xs text-[#495057] flex justify-between">
+                          <div className="font-medium">
+                            <span className="text-[#adb5bd] mr-1">{item.quantity}x</span> {item.name}
+                          </div>
+                          <span className="font-semibold text-[#343a40]">
+                            R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="border-t border-[#e9ecef] pt-2 flex justify-between items-center text-sm font-bold text-[#212529]">
+                      <span>Total pago:</span>
+                      <span>R$ {order.total?.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 flex gap-2">
+                  <button 
+                    onClick={() => handleTalkToSeller(order)}
+                    className="flex-1 py-2.5 rounded-xl border-2 border-[#e9ecef] text-[#495057] text-xs font-bold hover:bg-[#f8f9fa] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  >
                     Falar com o Vendedor
+                  </button>
+                  <button 
+                    onClick={() => deleteOrder(order.id)}
+                    className="py-2.5 px-4 rounded-xl border-2 border-[#ffc9c9] text-[#e03131] text-xs font-bold hover:bg-[#fff5f5] transition-colors flex items-center justify-center shadow-sm"
+                  >
+                    {order.status === 3 ? 'Excluir' : 'Cancelar'}
                   </button>
                 </div>
               </div>
