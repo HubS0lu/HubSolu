@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ArrowLeft, Search, Heart, Star, Clock, MapPin, SlidersHorizontal, Pizza, Store, Dumbbell, Smartphone, Shirt, HeartPulse, Bone, Wrench, Utensils, Beer, IceCream, Cake, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, ArrowLeft, Search, Heart, Star, Clock, MapPin, SlidersHorizontal, Pizza, Store, Dumbbell, Smartphone, Shirt, HeartPulse, Bone, Wrench, Utensils, Beer, IceCream, Cake, ShoppingCart, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import MarketplaceBottomNav from '../components/MarketplaceBottomNav';
 import { useStore } from '../contexts/StoreContext';
@@ -15,6 +15,8 @@ export default function MarketplaceCategory() {
   const { favorites, toggleFavorite } = useFavorites();
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('relevance');
 
   const getCategoryIcon = (name) => {
     const n = name.toLowerCase();
@@ -46,7 +48,16 @@ export default function MarketplaceCategory() {
 
   const filters = ['Todos', 'Entrega Grátis', 'Mais Rápidos', 'Melhor Avaliados'];
 
-  const categoryStores = getStoresByCategory(categoryName).filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const baseCategoryStores = getStoresByCategory(categoryName).filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  
+  let categoryStores = [...baseCategoryStores];
+  if (sortBy === 'rating') {
+    categoryStores.sort((a, b) => b.rating - a.rating);
+  } else if (sortBy === 'delivery_fee') {
+    categoryStores.sort((a, b) => a.deliveryFee - b.deliveryFee);
+  } else if (sortBy === 'delivery_time') {
+    categoryStores.sort((a, b) => parseInt(a.deliveryTime) - parseInt(b.deliveryTime));
+  }
 
   return (
     <div className="flex justify-center bg-[#212529] min-h-screen">
@@ -91,7 +102,7 @@ export default function MarketplaceCategory() {
               className="w-full bg-white border border-[#e9ecef] rounded-2xl py-3 pl-11 pr-4 focus:outline-none focus:border-[#adb5bd] focus:ring-1 focus:ring-[#adb5bd] transition-all shadow-sm text-[#495057] placeholder-[#adb5bd] text-sm font-medium"
             />
             <div className="absolute inset-y-0 right-2 flex items-center">
-              <button className="p-1.5 bg-[#f1f3f5] rounded-xl text-[#495057]">
+              <button onClick={() => setIsSortModalOpen(true)} className="p-1.5 bg-[#f1f3f5] rounded-xl text-[#495057] hover:bg-[#e9ecef] transition-colors">
                 <SlidersHorizontal size={16} />
               </button>
             </div>
@@ -175,6 +186,45 @@ export default function MarketplaceCategory() {
             );
           }))}
         </div>
+
+        {/* Sort Modal */}
+        {isSortModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-0">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsSortModalOpen(false)}></div>
+            <div className="w-full max-w-[440px] bg-[#f8f9fa] rounded-t-3xl sm:rounded-2xl shadow-2xl relative z-10 p-6 animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300 border border-[#e9ecef]">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-[#212529]">Ordenar Lojas</h2>
+                <button onClick={() => setIsSortModalOpen(false)} className="p-2 rounded-full hover:bg-[#e9ecef] transition-colors text-[#495057]">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                {[
+                  { id: 'relevance', label: 'Relevância (Padrão)' },
+                  { id: 'rating', label: 'Melhor Avaliação' },
+                  { id: 'delivery_fee', label: 'Menor Taxa de Entrega' },
+                  { id: 'delivery_time', label: 'Menor Tempo de Entrega' }
+                ].map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => {
+                      setSortBy(option.id);
+                      setIsSortModalOpen(false);
+                    }}
+                    className={`p-4 rounded-xl border text-left font-semibold transition-all ${
+                      sortBy === option.id 
+                        ? 'border-[#343a40] bg-[#343a40] text-[#f8f9fa]' 
+                        : 'border-[#ced4da] text-[#495057] hover:border-[#adb5bd]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Fixed Bottom Navigation with Modals */}
         <MarketplaceBottomNav />

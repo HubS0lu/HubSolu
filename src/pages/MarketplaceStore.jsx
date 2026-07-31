@@ -34,7 +34,9 @@ export default function MarketplaceStore() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [storeInstagram, setStoreInstagram] = useState('@loja.oficial');
-  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('relevance');
   // Checkout Form State
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('PIX');
@@ -61,7 +63,17 @@ export default function MarketplaceStore() {
     : products.filter(p => p.category === activeCategory);
 
   // Removida Paginação
-  const displayedProducts = filteredProducts;
+  const filteredBySearch = filteredProducts.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  let displayedProducts = [...filteredBySearch];
+  if (sortBy === 'price_asc') {
+    displayedProducts.sort((a, b) => a.price - b.price);
+  } else if (sortBy === 'price_desc') {
+    displayedProducts.sort((a, b) => b.price - a.price);
+  }
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -114,9 +126,9 @@ export default function MarketplaceStore() {
       {/* Header */}
       <header className="flex justify-between items-center p-6 border-b border-store-secondary/30 bg-store-bg/80 backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center gap-4">
-          <Link to="/marketplace/category" className="p-2 -ml-2 rounded-full hover:bg-store-primary/10 transition-colors text-store-text">
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-store-primary/10 transition-colors text-store-text">
             <ArrowLeft size={24} />
-          </Link>
+          </button>
           <div className="w-10 h-10 rounded-full border border-store-secondary/30 flex items-center justify-center overflow-hidden bg-store-secondary/20 shrink-0">
             <img src={storeInfo.logo} alt={storeInfo.name} className="w-full h-full object-cover"/>
           </div>
@@ -189,9 +201,11 @@ export default function MarketplaceStore() {
             <input 
               type="text" 
               placeholder={`Buscar em ${storeInfo.name}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-store-secondary/5 border border-store-secondary/20 rounded-2xl py-4 pl-14 pr-14 focus:outline-none focus:bg-store-bg focus:border-store-primary focus:ring-4 focus:ring-store-primary/10 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-md text-store-text placeholder-store-muted/70 text-sm font-medium"
             />
-            <button className="absolute inset-y-0 right-2 my-auto h-10 w-10 flex items-center justify-center rounded-xl bg-store-bg border border-store-secondary/20 text-store-text shadow-sm hover:bg-store-primary hover:text-store-bg hover:border-store-primary transition-all duration-300">
+            <button onClick={() => setIsSortModalOpen(true)} className="absolute inset-y-0 right-2 my-auto h-10 w-10 flex items-center justify-center rounded-xl bg-store-bg border border-store-secondary/20 text-store-text shadow-sm hover:bg-store-primary hover:text-store-bg hover:border-store-primary transition-all duration-300">
               <SlidersHorizontal size={18} />
             </button>
           </div>
@@ -395,6 +409,44 @@ export default function MarketplaceStore() {
           </div>
         </div>
       )}
+      {/* Sort Modal */}
+      {isSortModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-0">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsSortModalOpen(false)}></div>
+          <div className="w-full max-w-[440px] bg-store-bg rounded-t-3xl sm:rounded-2xl shadow-2xl relative z-10 p-6 animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300 border border-store-secondary/20">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-store-text">Ordenar Produtos</h2>
+              <button onClick={() => setIsSortModalOpen(false)} className="p-2 rounded-full hover:bg-store-secondary/20 transition-colors text-store-text">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              {[
+                { id: 'relevance', label: 'Relevância (Padrão)' },
+                { id: 'price_asc', label: 'Menor Preço' },
+                { id: 'price_desc', label: 'Maior Preço' }
+              ].map(option => (
+                <button
+                  key={option.id}
+                  onClick={() => {
+                    setSortBy(option.id);
+                    setIsSortModalOpen(false);
+                  }}
+                  className={`p-4 rounded-xl border text-left font-semibold transition-all ${
+                    sortBy === option.id 
+                      ? 'border-store-primary bg-store-primary text-store-bg' 
+                      : 'border-store-secondary/30 text-store-text hover:border-store-primary/50'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );

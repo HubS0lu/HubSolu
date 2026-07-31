@@ -20,6 +20,7 @@ export default function MarketplaceBottomNav() {
   const location = useLocation();
 
   const favoriteStores = favorites.map(id => getStoreById(id)).filter(Boolean);
+  const hasOrderReady = orders.some(order => order.status === 2);
 
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('PIX');
@@ -358,8 +359,11 @@ export default function MarketplaceBottomNav() {
           <button onClick={() => setActiveModal('favorites')} className={`group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border border-[#e9ecef] ${activeModal === 'favorites' ? 'bg-[#343a40] text-[#f8f9fa] scale-110' : 'bg-[#ffffff] text-[#495057] hover:bg-[#343a40] hover:text-[#f8f9fa] hover:scale-105'}`}>
             <Heart size={22} className={activeModal === 'favorites' ? '' : 'group-hover:scale-110 transition-transform'} />
           </button>
-          <button onClick={() => setActiveModal('tracking')} className={`group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border border-[#e9ecef] ${activeModal === 'tracking' ? 'bg-[#343a40] text-[#f8f9fa] scale-110' : 'bg-[#ffffff] text-[#495057] hover:bg-[#343a40] hover:text-[#f8f9fa] hover:scale-105'}`}>
+          <button onClick={() => setActiveModal('tracking')} className={`group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border relative ${activeModal === 'tracking' ? 'bg-[#343a40] text-[#f8f9fa] scale-110 border-[#343a40]' : 'bg-[#ffffff] text-[#495057] hover:bg-[#343a40] hover:text-[#f8f9fa] hover:scale-105 border-[#e9ecef]'} ${hasOrderReady && activeModal !== 'tracking' ? 'animate-pulse ring-4 ring-[#e03131]/30 border-[#e03131]' : ''}`}>
             <Package size={22} className={activeModal === 'tracking' ? '' : 'group-hover:scale-110 transition-transform'} />
+            {hasOrderReady && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#e03131] rounded-full border-2 border-white shadow-sm"></span>
+            )}
           </button>
         </div>
       </div>
