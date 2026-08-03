@@ -110,7 +110,7 @@ export default function LandingPage() {
             </Link>
             <Link
               className="flex items-center gap-2 rounded-xl border border-[#ced4da] bg-[#f8f9fa] px-8 py-4 text-lg font-semibold text-[#212529] transition-all hover:border-[#adb5bd] hover:bg-[#f1f3f5]"
-              to="/demo-delivery"
+              to="/registro"
             >
               <span className="material-symbols-outlined">play_circle</span>
               Ver Demonstração Delivery

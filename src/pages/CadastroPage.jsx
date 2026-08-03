@@ -34,11 +34,17 @@ export default function CadastroPage() {
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    await loginWithGoogle();
-    
-    // Redirect back to where they came from, or to selecao-negocio
-    const from = location.state?.from?.pathname || '/selecao-negocio';
-    navigate(from, { replace: true });
+    try {
+      await loginWithGoogle();
+      
+      // Redirect back to where they came from, or to selecao-negocio
+      const from = location.state?.from?.pathname || '/selecao-negocio';
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error("Erro ao fazer login com o Google:", error);
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (

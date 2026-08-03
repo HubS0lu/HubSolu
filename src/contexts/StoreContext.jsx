@@ -1,46 +1,43 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { storesData, productsData } from '../data/mockData';
+import { supabase } from '../utils/supabaseClient';
 
 const StoreContext = createContext({});
 
 export const useStore = () => useContext(StoreContext);
 
 export const StoreProvider = ({ children }) => {
-  const [stores, setStores] = useState(() => {
-    const saved = localStorage.getItem('hubsolu_stores');
-    return saved ? JSON.parse(saved) : [];
-  });
-  
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('hubsolu_products');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [stores, setStores] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    if (stores.length === 0) {
-      setStores(storesData);
-      localStorage.setItem('hubsolu_stores', JSON.stringify(storesData));
-    }
-    if (products.length === 0) {
-      setProducts(productsData);
-      localStorage.setItem('hubsolu_products', JSON.stringify(productsData));
-    }
+    const fetchInitialData = async () => {
+      setLoadingData(true);
+      
+      // Busca todas as lojas
+      const { data: storesData, error: storesError } = await supabase.from('stores').select('*');
+      if (storesError) {
+        console.error("Erro ao buscar lojas:", storesError);
+      } else if (storesData) {
+        setStores(storesData);
+      }
+
+      // Busca todos os produtos
+      const { data: productsData, error: productsError } = await supabase.from('products').select('*');
+      if (productsError) {
+        console.error("Erro ao buscar produtos:", productsError);
+      } else if (productsData) {
+        setProducts(productsData);
+      }
+
+      setLoadingData(false);
+    };
+
+    fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    if (stores.length > 0) {
-      localStorage.setItem('hubsolu_stores', JSON.stringify(stores));
-    }
-  }, [stores]);
-
-  useEffect(() => {
-    if (products.length > 0) {
-      localStorage.setItem('hubsolu_products', JSON.stringify(products));
-    }
-  }, [products]);
-
   const getStoreById = (id) => stores.find(s => s.id === id);
-  const getProductsByStore = (storeId) => products.filter(p => p.storeId === storeId);
+  const getProductsByStore = (storeId) => products.filter(p => p.store_id === storeId || p.storeId === storeId);
   const getStoresByCategory = (category) => stores.filter(s => s.category === category || s.subCategory === category);
   
   const searchStoresAndProducts = (query) => {
@@ -49,38 +46,77 @@ export const StoreProvider = ({ children }) => {
     
     const matchedStores = stores.filter(s => 
       s.name.toLowerCase().includes(q) || 
-      s.description.toLowerCase().includes(q) ||
-      s.category.toLowerCase().includes(q)
+      (s.description && s.description.toLowerCase().includes(q)) ||
+      (s.category && s.category.toLowerCase().includes(q))
     );
     
     const matchedProducts = products.filter(p => 
       p.name.toLowerCase().includes(q) || 
-      p.description.toLowerCase().includes(q)
+      (p.description && p.description.toLowerCase().includes(q))
     );
     
     return { stores: matchedStores, products: matchedProducts };
   };
 
-  const addProduct = (product) => {
-    setProducts(prev => [...prev, product]);
+  const addProduct = async (product) => {
+    const { data, error } = await supabase.from('products').insert([product]).select();
+    if (error) {
+      console.error("Erro ao adicionar produto", error);
+      throw error;
+    }
+    if (data) {
+      setProducts(prev => [...prev, data[0]]);
+    }
   };
 
-  const updateProduct = (product) => {
-    setProducts(prev => prev.map(p => p.id === product.id ? product : p));
+  const updateProduct = async (product) => {
+    const { data, error } = await supabase.from('products').update(product).eq('id', product.id).select();
+    if (error) {
+      console.error("Erro ao atualizar produto", error);
+      throw error;
+    }
+    if (data) {
+      setProducts(prev => prev.map(p => p.id === product.id ? data[0] : p));
+    }
   };
 
-  const deleteProduct = (id) => {
+  const deleteProduct = async (id) => {
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) {
+      console.error("Erro ao deletar produto", error);
+      throw error;
+    }
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 
-  const updateStore = (updatedStore) => {
-    setStores(prev => prev.map(s => s.id === updatedStore.id ? updatedStore : s));
+  const updateStore = async (updatedStore) => {
+    const { data, error } = await supabase.from('stores').update(updatedStore).eq('id', updatedStore.id).select();
+    if (error) {
+      console.error("Erro ao atualizar loja", error);
+      throw error;
+    }
+    if (data) {
+      setStores(prev => prev.map(s => s.id === updatedStore.id ? data[0] : s));
+    }
+  };
+
+  const createStore = async (storeData) => {
+    const { data, error } = await supabase.from('stores').insert([storeData]).select();
+    if (error) {
+      console.error("Erro ao criar loja", error);
+      throw error;
+    }
+    if (data) {
+      setStores(prev => [...prev, data[0]]);
+      return data[0];
+    }
   };
 
   return (
     <StoreContext.Provider value={{
       stores,
       products,
+      loadingData,
       getStoreById,
       getProductsByStore,
       getStoresByCategory,
@@ -88,7 +124,8 @@ export const StoreProvider = ({ children }) => {
       addProduct,
       updateProduct,
       deleteProduct,
-      updateStore
+      updateStore,
+      createStore
     }}>
       {children}
     </StoreContext.Provider>

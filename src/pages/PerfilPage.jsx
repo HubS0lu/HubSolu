@@ -7,6 +7,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { useOrders } from '../contexts/OrderContext';
 import { useStore } from '../contexts/StoreContext';
+import { useAuth } from '../contexts/AuthContext';
 import ImageCropModal from '../components/ImageCropModal';
 
 const themeCategories = [
@@ -33,38 +34,7 @@ const themes = {
   ]
 };
 
-// Mock Data for Metrics
-const metrics = {
-  activeCustomers: 142,
-  totalAccesses: 1245,
-  totalOrders: 328,
-  dailyAccesses: [
-    { day: 'Seg', value: 120 },
-    { day: 'Ter', value: 150 },
-    { day: 'Qua', value: 180 },
-    { day: 'Qui', value: 210 },
-    { day: 'Sex', value: 350 },
-    { day: 'Sáb', value: 400 },
-    { day: 'Dom', value: 380 },
-  ]
-};
-
-const maxAccess = Math.max(...metrics.dailyAccesses.map(d => d.value));
-
-// Mock Data for Billing
-const invoices = [
-  { id: 'inv_123', date: '15/07/2026', amount: 'R$ 149,90', status: 'Atrasado', url: '#' },
-  { id: 'inv_122', date: '15/06/2026', amount: 'R$ 149,90', status: 'Pago', url: '#' },
-  { id: 'inv_121', date: '15/05/2026', amount: 'R$ 149,90', status: 'Pago', url: '#' },
-];
-
-// Mock Data for Cozinha
-const comandasMock = [
-  { id: 'CMD-001', customer: 'Ana Paula', status: 'fila', time: '10 min', items: [{ name: 'X-Bacon', obs: 'Sem cebola' }, { name: 'Coca-Cola', obs: '' }] },
-  { id: 'CMD-002', customer: 'Carlos Mendes', status: 'preparando', time: '15 min', items: [{ name: 'X-Salada', obs: '' }, { name: 'Batata Frita', obs: 'Bem passada' }] },
-  { id: 'CMD-003', customer: 'Juliana Silva', status: 'pronto', time: '5 min', items: [{ name: 'X-Tudo', obs: '' }] },
-  { id: 'CMD-004', customer: 'Lucas Santos', status: 'fila', time: '20 min', items: [{ name: '2x Hot Dog', obs: 'Sem mostarda' }] }
-];
+// Removidos mock data estáticos (metrics, invoices, comandasMock) para integrar com dados reais
 
 // Removed local mock data
 const PRODUCT_CATEGORIES = {
@@ -82,30 +52,59 @@ export default function PerfilPage() {
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   
   const { orders, updateOrderStatus } = useOrders();
-  const { getProductsByStore, addProduct, updateProduct, deleteProduct: removeProductFromStore, getStoreById, updateStore } = useStore();
+  const { stores, getProductsByStore, addProduct, updateProduct, deleteProduct: removeProductFromStore, updateStore, createStore } = useStore();
+  const { user } = useAuth();
   
-  const myProducts = getProductsByStore('burger-co');
-  const myStore = getStoreById('burger-co');
-  const storeOrders = orders.filter(o => o.storeId === 'burger-co');
+  const myStore = stores.find(s => s.user_id === user?.id);
+  const myProducts = myStore ? getProductsByStore(myStore.id) : [];
+  const storeOrders = myStore ? orders.filter(o => o.storeId === myStore.id || o.store_id === myStore.id) : [];
+
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Lojista';
+  const userEmail = user?.email || '';
 
   // --- Novos Estados ---
   const [userData, setUserData] = useState({
-    name: 'João Silva',
-    email: 'joao.silva@email.com',
-    phone: myStore?.whatsapp || '(11) 98765-4321',
-    instagram: localStorage.getItem('store_instagram') || '@joaoburguers'
+    name: userName,
+    email: userEmail,
+    phone: myStore?.whatsapp || '',
+    instagram: localStorage.getItem('store_instagram') || ''
   });
 
   const [storeData, setStoreData] = useState({
-    name: myStore?.name || "João Burguer's",
-    segment: myStore?.category || "Lanchonete / Fast Food",
-    description: myStore?.description || "O melhor hambúrguer artesanal da região. Ingredientes frescos e selecionados.",
-    address: myStore?.address || "Rua das Flores, 123 - Centro",
-    hours: myStore?.hours || "Seg a Sáb - 18h às 23h30"
+    name: myStore?.name || "Minha Nova Loja",
+    segment: myStore?.category || "Segmento da Loja",
+    description: myStore?.description || "",
+    address: myStore?.address || "",
+    hours: myStore?.hours || ""
   });
 
   const [logoPreview, setLogoPreview] = useState(myStore?.logo || null);
   const [bannerPreview, setBannerPreview] = useState(myStore?.banner || null);
+
+  // Sincroniza o estado local quando os dados do Supabase chegam (pois o fetch é assíncrono)
+  useEffect(() => {
+    if (user) {
+      setUserData(prev => ({
+        ...prev,
+        name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Lojista',
+        email: user?.email || ''
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (myStore) {
+      setStoreData({
+        name: myStore.name || "",
+        segment: myStore.category || "",
+        description: myStore.description || "",
+        address: myStore.address || "",
+        hours: myStore.hours || ""
+      });
+      setLogoPreview(myStore.logo || null);
+      setBannerPreview(myStore.banner || null);
+    }
+  }, [myStore]);
   
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -126,20 +125,37 @@ export default function PerfilPage() {
     alert("Dados pessoais salvos com sucesso!");
   };
   
-  const handleSaveStoreData = () => {
-    if (myStore) {
-      updateStore({
-        ...myStore,
-        name: storeData.name,
-        category: storeData.segment,
-        description: storeData.description,
-        address: storeData.address, // Added for future use, mockData didn't have it
-        hours: storeData.hours,     // Added for future use
-        logo: logoPreview || myStore.logo,
-        banner: bannerPreview || myStore.banner
-      });
+  const handleSaveStoreData = async () => {
+    try {
+      if (myStore) {
+        await updateStore({
+          ...myStore,
+          name: storeData.name,
+          category: storeData.segment,
+          description: storeData.description,
+          address: storeData.address,
+          hours: storeData.hours,
+          logo: logoPreview || myStore.logo,
+          banner: bannerPreview || myStore.banner
+        });
+        alert("Dados da loja atualizados com sucesso!");
+      } else {
+        await createStore({
+          user_id: user?.id,
+          name: storeData.name,
+          category: storeData.segment,
+          description: storeData.description,
+          address: storeData.address,
+          hours: storeData.hours,
+          logo: logoPreview,
+          banner: bannerPreview,
+          theme: activeTheme
+        });
+        alert("Loja criada com sucesso!");
+      }
+    } catch (e) {
+      alert("Ocorreu um erro ao salvar a loja.");
     }
-    alert("Dados da loja salvos com sucesso!");
   };
 
   const handleUploadClick = (e, type, aspect) => {
@@ -183,6 +199,12 @@ export default function PerfilPage() {
   };
 
   const saveProduct = () => {
+    if (!myStore) {
+      alert("Você precisa criar e salvar as informações da sua loja antes de adicionar produtos!");
+      setIsProductModalOpen(false);
+      return;
+    }
+
     let parsedPrice = 0;
     if (typeof editingProduct.price === 'string') {
       const priceStr = editingProduct.price.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
@@ -193,16 +215,18 @@ export default function PerfilPage() {
     if (isNaN(parsedPrice)) parsedPrice = 0;
 
     const productToSave = {
-      ...editingProduct,
+      name: editingProduct.name,
+      description: editingProduct.description,
+      category: editingProduct.category,
       price: parsedPrice,
-      storeId: 'burger-co',
+      store_id: myStore.id,
       img: editingProduct.image || editingProduct.img
     };
 
     if (editingProduct.id) {
-      updateProduct(productToSave);
+      updateProduct({ ...productToSave, id: editingProduct.id });
     } else {
-      addProduct({ ...productToSave, id: 'p_' + Date.now() });
+      addProduct(productToSave);
     }
     setIsProductModalOpen(false);
   };
@@ -230,7 +254,9 @@ export default function PerfilPage() {
     localStorage.setItem('store_theme', themeId);
   };
 
-  const hasOverdue = invoices.some(inv => inv.status === 'Atrasado');
+  // Lógica de faturas vazias para novas contas
+  const hasOverdue = false;
+  const invoicesList = []; // Sem faturas iniciais
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fa] font-body transition-colors duration-300">
@@ -238,12 +264,12 @@ export default function PerfilPage() {
       <header className="px-6 pt-12 pb-6 border-b border-[#e9ecef] bg-[#f8f9fa] sticky top-0 z-30">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-[#212529] font-headline font-bold text-2xl tracking-tight">João Burguer's</h1>
+            <h1 className="text-[#212529] font-headline font-bold text-2xl tracking-tight">{myStore?.name || "Minha Nova Loja"}</h1>
             <p className="text-[#6c757d] text-sm mt-1">Gerencie sua loja e resultados.</p>
           </div>
           <div className="w-12 h-12 rounded-full overflow-hidden border border-[#dee2e6] shadow-sm">
             <img 
-              src="https://ui-avatars.com/api/?name=Joao+Burguers&background=343a40&color=f8f9fa" 
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=343a40&color=f8f9fa`}
               alt="Perfil" 
               className="w-full h-full object-cover"
             />
@@ -290,14 +316,14 @@ export default function PerfilPage() {
                   <Activity size={16} />
                   <h3 className="text-xs font-semibold uppercase tracking-wider">Acessos</h3>
                 </div>
-                <p className="text-2xl font-bold text-[#212529]">{metrics.totalAccesses}</p>
-                <p className="text-[10px] text-[#6c757d] mt-1">+12% este mês</p>
+                <p className="text-2xl font-bold text-[#212529]">0</p>
+                <p className="text-[10px] text-[#6c757d] mt-1">Este mês</p>
               </div>
               
               <div className="bg-[#f1f3f5] p-5 rounded-2xl border border-[#e9ecef] shadow-sm">
                 <p className="text-xs font-bold text-[#495057] uppercase tracking-wider mb-2">Total de Pedidos</p>
-                <p className="text-2xl font-bold text-[#212529]">{storeOrders.length > 0 ? storeOrders.length : metrics.totalOrders}</p>
-                <p className="text-[10px] text-[#2b8a3e] mt-1 font-bold">+12% esta semana</p>
+                <p className="text-2xl font-bold text-[#212529]">{storeOrders.length}</p>
+                <p className="text-[10px] text-[#2b8a3e] mt-1 font-bold">Baseado em dados reais</p>
               </div>
             </div>
 
@@ -308,7 +334,7 @@ export default function PerfilPage() {
                   <h3 className="text-sm font-semibold uppercase tracking-wider">Clientes Ativos</h3>
                 </div>
                 <span className="bg-[#343a40] text-[#f8f9fa] text-xs font-bold px-2.5 py-1 rounded-full">
-                  {metrics.activeCustomers}
+                  0
                 </span>
               </div>
               <p className="text-xs text-[#6c757d]">Clientes que realizaram ao menos 1 pedido nos últimos 30 dias.</p>
@@ -322,14 +348,22 @@ export default function PerfilPage() {
               </div>
               
               <div className="flex items-end justify-between h-32 gap-2 mt-4">
-                {metrics.dailyAccesses.map((day, idx) => {
-                  const heightPercent = (day.value / maxAccess) * 100;
+                {[
+                  { day: 'Seg', value: 0 },
+                  { day: 'Ter', value: 0 },
+                  { day: 'Qua', value: 0 },
+                  { day: 'Qui', value: 0 },
+                  { day: 'Sex', value: 0 },
+                  { day: 'Sáb', value: 0 },
+                  { day: 'Dom', value: 0 },
+                ].map((day, idx) => {
+                  const heightPercent = 0; // Gráfico zerado
                   return (
                     <div key={idx} className="flex flex-col items-center gap-2 flex-1 group">
                       <div className="w-full relative flex justify-center h-full items-end">
                         <div 
                           className="w-full max-w-[24px] bg-[#ced4da] group-hover:bg-[#adb5bd] rounded-t-md transition-all duration-300 relative"
-                          style={{ height: `${heightPercent}%` }}
+                          style={{ height: `4px` }}
                         >
                           <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#495057] opacity-0 group-hover:opacity-100 transition-opacity">
                             {day.value}
@@ -372,15 +406,15 @@ export default function PerfilPage() {
               <div className="p-5 border-b border-[#e9ecef] flex justify-between items-center bg-[#f8f9fa]">
                 <div>
                   <h3 className="text-sm font-semibold text-[#495057] uppercase tracking-wider mb-1">Seu Plano Atual</h3>
-                  <p className="text-xl font-bold text-[#212529]">HubSolu Pro</p>
+                  <p className="text-xl font-bold text-[#212529]">Plano Gratuito (Teste)</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-[#212529]">R$ 149,90</p>
+                  <p className="text-lg font-bold text-[#212529]">R$ 0,00</p>
                   <p className="text-xs text-[#6c757d]">por mês</p>
                 </div>
               </div>
               <div className="p-5">
-                <p className="text-sm text-[#495057] mb-4">Próxima cobrança programada para <strong className="text-[#212529]">15/08/2026</strong> via Cartão de Crédito final 4242.</p>
+                <p className="text-sm text-[#495057] mb-4">Você ainda não configurou um método de pagamento.</p>
                 <button className="w-full bg-[#e9ecef] text-[#212529] font-semibold py-3 rounded-xl border border-[#ced4da] hover:bg-[#dee2e6] transition-colors flex justify-center items-center gap-2">
                   Gerenciar no Stripe <ExternalLink size={16} />
                 </button>
@@ -390,7 +424,7 @@ export default function PerfilPage() {
             <div>
               <h3 className="text-sm font-semibold text-[#495057] uppercase tracking-wider mb-4 px-1">Histórico de Faturas</h3>
               <div className="space-y-3">
-                {invoices.map((inv) => (
+                {invoicesList.length > 0 ? invoicesList.map((inv) => (
                   <div key={inv.id} className="bg-[#f1f3f5] p-4 rounded-xl border border-[#e9ecef] flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-[#212529] text-sm">{inv.date}</p>
@@ -409,7 +443,9 @@ export default function PerfilPage() {
                       </button>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-sm text-[#6c757d]">Você ainda não possui faturas.</p>
+                )}
               </div>
             </div>
 
@@ -423,8 +459,8 @@ export default function PerfilPage() {
               <div className="relative group mb-3">
                 <div className="w-20 h-20 rounded-full overflow-hidden border border-[#dee2e6] bg-[#e9ecef]">
                   <img 
-                    src="https://ui-avatars.com/api/?name=João+Silva&background=343a40&color=f8f9fa" 
-                    alt="João Silva" 
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=343a40&color=f8f9fa`}
+                    alt={userName} 
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -711,7 +747,7 @@ export default function PerfilPage() {
 
                 <div className="flex flex-col items-center gap-2">
                   <button 
-                    onClick={() => navigate('/marketplace/store')}
+                    onClick={() => navigate(`/loja/${myStore?.id}`)}
                     className="w-14 h-14 bg-[#f8f9fa] text-[#212529] border border-[#ced4da] rounded-full flex items-center justify-center shadow-sm hover:bg-[#e9ecef] transition-all hover:scale-105"
                   >
                     <Eye size={24} />

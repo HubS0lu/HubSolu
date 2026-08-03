@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../utils/supabaseClient';
 
 const AuthContext = createContext();
 
@@ -11,51 +12,40 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if there is a logged in user in localStorage on mount
-    const storedUser = localStorage.getItem('hubsolu_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Failed to parse stored user", e);
-      }
-    }
-    setLoading(false);
+    // 1. Pega a sessão atual ao iniciar o app
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // 2. Escuta mudanças na autenticação (login, logout, refresh de token)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (email, password) => {
-    // Simulate login - in a real app this would be an API call
-    const mockUser = {
-      id: 'usr_' + Math.random().toString(36).substr(2, 9),
-      name: email.split('@')[0],
-      email: email,
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('hubsolu_user', JSON.stringify(mockUser));
-    return mockUser;
+  const login = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data.user;
   };
 
-  const loginWithGoogle = () => {
-    return new Promise((resolve) => {
-      // Simulate Google login network delay
-      setTimeout(() => {
-        const mockUser = {
-          id: 'google_' + Math.random().toString(36).substr(2, 9),
-          name: 'Google User',
-          email: 'user@gmail.com',
-        };
-        
-        setUser(mockUser);
-        localStorage.setItem('hubsolu_user', JSON.stringify(mockUser));
-        resolve(mockUser);
-      }, 1500);
+  const loginWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/selecao-negocio'
+      }
     });
+    if (error) throw error;
+    return data;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('hubsolu_user');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   const value = {

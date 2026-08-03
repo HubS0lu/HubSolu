@@ -35,9 +35,14 @@ export default function RegistroPage() {
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    await loginWithGoogle();
-    
-    navigate('/selecao-negocio', { replace: true });
+    try {
+      await loginWithGoogle();
+      navigate('/selecao-negocio', { replace: true });
+    } catch (error) {
+      console.error("Erro ao fazer login com o Google:", error);
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
