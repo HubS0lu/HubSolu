@@ -92,7 +92,7 @@ export default function PerfilPage() {
   const [userData, setUserData] = useState({
     name: 'João Silva',
     email: 'joao.silva@email.com',
-    phone: '(11) 98765-4321',
+    phone: myStore?.whatsapp || '(11) 98765-4321',
     instagram: localStorage.getItem('store_instagram') || '@joaoburguers'
   });
 
@@ -116,6 +116,13 @@ export default function PerfilPage() {
   // --- Funções ---
   const handleSaveUserData = () => {
     localStorage.setItem('store_instagram', userData.instagram);
+    localStorage.setItem('global_whatsapp', userData.phone);
+    if (myStore) {
+      updateStore({
+        ...myStore,
+        whatsapp: userData.phone
+      });
+    }
     alert("Dados pessoais salvos com sucesso!");
   };
   

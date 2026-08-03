@@ -6,6 +6,7 @@ import { useCart } from '../contexts/CartContext';
 import { useStore } from '../contexts/StoreContext';
 import { useOrders } from '../contexts/OrderContext';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { formatWhatsAppNumber } from '../utils/formatWhatsApp';
 
 export default function MarketplaceStore() {
   const location = useLocation();
@@ -116,8 +117,9 @@ export default function MarketplaceStore() {
     message += `\n*Total: R$ ${total}*`;
 
     const encodedMessage = encodeURIComponent(message);
-    const mockWhatsAppNumber = "5511999999999"; 
-    window.open(`https://wa.me/${mockWhatsAppNumber}?text=${encodedMessage}`, '_blank');
+    const whatsappNumber = storeInfo.whatsapp || localStorage.getItem('global_whatsapp') || "5511999999999"; 
+    const formattedNumber = formatWhatsAppNumber(whatsappNumber);
+    window.open(`https://wa.me/${formattedNumber}?text=${encodedMessage}`, '_blank');
   };
 
   return (

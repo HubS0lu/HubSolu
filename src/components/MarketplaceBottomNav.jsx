@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useStore } from '../contexts/StoreContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { formatWhatsAppNumber } from '../utils/formatWhatsApp';
 
 export default function MarketplaceBottomNav() {
   const [activeModal, setActiveModal] = useState(null); // 'cart', 'favorites', 'tracking', or null
@@ -72,16 +73,20 @@ export default function MarketplaceBottomNav() {
     message += `\n*Total: R$ ${total}*`;
 
     const encodedMessage = encodeURIComponent(message);
-    const mockWhatsAppNumber = "5511999999999"; 
-    window.open(`https://wa.me/${mockWhatsAppNumber}?text=${encodedMessage}`, '_blank');
+    const whatsappNumber = store?.whatsapp || localStorage.getItem('global_whatsapp') || "5511999999999"; 
+    const formattedNumber = formatWhatsAppNumber(whatsappNumber);
+    window.open(`https://wa.me/${formattedNumber}?text=${encodedMessage}`, '_blank');
   };
 
   const handleTalkToSeller = (order) => {
     const customerName = user?.name || 'Cliente';
     const message = `Olá! Sou ${customerName}. Gostaria de falar sobre o meu pedido *${order.id}* na sua loja.\n\nVocê pode me ajudar?`;
     const encodedMessage = encodeURIComponent(message);
-    const mockWhatsAppNumber = "5511999999999"; 
-    window.open(`https://wa.me/${mockWhatsAppNumber}?text=${encodedMessage}`, '_blank');
+    
+    const store = getStoreById(order.storeId);
+    const whatsappNumber = store?.whatsapp || localStorage.getItem('global_whatsapp') || "5511999999999"; 
+    const formattedNumber = formatWhatsAppNumber(whatsappNumber);
+    window.open(`https://wa.me/${formattedNumber}?text=${encodedMessage}`, '_blank');
   };
 
   // --- RENDER HELPERS ---

@@ -11,7 +11,8 @@ export const storesData = [
     subCategory: 'Burgers',
     logo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&q=50',
     banner: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80',
-    theme: 'theme-food-dark-bbq'
+    theme: 'theme-food-dark-bbq',
+    whatsapp: '5511999999999'
   },
   {
     id: 'bella-pizza',
@@ -25,7 +26,8 @@ export const storesData = [
     subCategory: 'Pizzaria',
     logo: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&q=50',
     banner: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=80',
-    theme: 'theme-fashion-minimalist'
+    theme: 'theme-fashion-minimalist',
+    whatsapp: '5511999999999'
   },
   {
     id: 'moda-fashion',
@@ -39,7 +41,8 @@ export const storesData = [
     subCategory: 'Feminino',
     logo: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200&q=50',
     banner: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80',
-    theme: 'theme-beauty-luxury-gold'
+    theme: 'theme-beauty-luxury-gold',
+    whatsapp: '5511999999999'
   }
 ];
 
