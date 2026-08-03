@@ -43,20 +43,12 @@ export default function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/cadastro" element={<CadastroPage />} />
                     <Route path="/registro" element={<RegistroPage />} />
-<<<<<<< HEAD
-                    <Route path="/selecao-negocio" element={<SelecaoNegocioPage />} />
-                    <Route path="/planos" element={<PlanosPage />} />
+                    <Route path="/selecao-negocio" element={<ProtectedRoute><SelecaoNegocioPage /></ProtectedRoute>} />
+                    <Route path="/planos" element={<ProtectedRoute><PlanosPage /></ProtectedRoute>} />
                     <Route path="/marketplace" element={<MarketplaceHome />} />
                     <Route path="/marketplace/category" element={<MarketplaceCategory />} />
                     <Route path="/loja/:storeId" element={<MarketplaceStore />} />
                     <Route path="/marketplace/store" element={<MarketplaceStore />} />
-=======
-                    <Route path="/selecao-negocio" element={<ProtectedRoute><SelecaoNegocioPage /></ProtectedRoute>} />
-                    <Route path="/planos" element={<ProtectedRoute><PlanosPage /></ProtectedRoute>} />
-                    <Route path="/marketplace" element={<ProtectedRoute><MarketplaceHome /></ProtectedRoute>} />
-                    <Route path="/marketplace/category" element={<ProtectedRoute><MarketplaceCategory /></ProtectedRoute>} />
-                    <Route path="/marketplace/store" element={<ProtectedRoute><MarketplaceStore /></ProtectedRoute>} />
->>>>>>> 2555921 (feat: integrate Supabase auth, real database for stores and orders, remove mock data from dashboard)
                     <Route path="/*" element={
                       <ProtectedRoute>
                         <MobileLayout>
