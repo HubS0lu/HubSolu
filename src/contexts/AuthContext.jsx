@@ -37,16 +37,20 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithGoogle = () => {
-    // Simulate Google login
-    const mockUser = {
-      id: 'google_' + Math.random().toString(36).substr(2, 9),
-      name: 'Google User',
-      email: 'user@gmail.com',
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('hubsolu_user', JSON.stringify(mockUser));
-    return mockUser;
+    return new Promise((resolve) => {
+      // Simulate Google login network delay
+      setTimeout(() => {
+        const mockUser = {
+          id: 'google_' + Math.random().toString(36).substr(2, 9),
+          name: 'Google User',
+          email: 'user@gmail.com',
+        };
+        
+        setUser(mockUser);
+        localStorage.setItem('hubsolu_user', JSON.stringify(mockUser));
+        resolve(mockUser);
+      }, 1500);
+    });
   };
 
   const logout = () => {

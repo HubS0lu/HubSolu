@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const GoogleIcon = () => (
@@ -12,33 +12,32 @@ const GoogleIcon = () => (
   </svg>
 );
 
-export default function CadastroPage() {
+export default function RegistroPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, loginWithGoogle } = useAuth();
   
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
     if (!email) return;
     
+    // In a real app we would register here. For now we use login context mock
     login(email, password);
     
-    // Redirect back to where they came from, or to selecao-negocio
-    const from = location.state?.from?.pathname || '/selecao-negocio';
-    navigate(from, { replace: true });
+    // Redirect to selecao-negocio
+    navigate('/selecao-negocio', { replace: true });
   };
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     await loginWithGoogle();
     
-    // Redirect back to where they came from, or to selecao-negocio
-    const from = location.state?.from?.pathname || '/selecao-negocio';
-    navigate(from, { replace: true });
+    navigate('/selecao-negocio', { replace: true });
   };
 
   return (
@@ -47,11 +46,28 @@ export default function CadastroPage() {
         
         <div className="flex-1 flex flex-col justify-center relative z-10">
         <div className="mb-10 text-center">
-          <h1 className="text-3xl font-extrabold font-headline text-[#212529] mb-2">Bem-vindo de volta!</h1>
-          <p className="text-[#6c757d] font-body">Faça login para continuar.</p>
+          <h1 className="text-3xl font-extrabold font-headline text-[#212529] mb-2">Crie sua conta</h1>
+          <p className="text-[#6c757d] font-body">Comece a gerenciar seu negócio agora.</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4 mb-8">
+        <form onSubmit={handleRegister} className="space-y-4 mb-8">
+          <div>
+            <label className="block text-sm font-semibold text-[#495057] uppercase tracking-wider mb-1.5">Nome</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#adb5bd]">
+                <User size={20} />
+              </div>
+              <input 
+                type="text" 
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+                className="w-full bg-[#f1f3f5] border border-[#ced4da] rounded-xl py-3 pl-11 pr-4 text-[#212529] placeholder:text-[#adb5bd] focus:outline-none focus:border-[#adb5bd] focus:bg-[#f8f9fa] transition-colors"
+                placeholder="Seu nome completo"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-semibold text-[#495057] uppercase tracking-wider mb-1.5">E-mail</label>
             <div className="relative">
@@ -84,16 +100,13 @@ export default function CadastroPage() {
                 placeholder="••••••••"
               />
             </div>
-            <div className="flex justify-end mt-2">
-              <a href="#" className="text-xs font-semibold text-[#6c757d] hover:text-[#212529] transition-colors">Esqueceu a senha?</a>
-            </div>
           </div>
 
           <button 
             type="submit" 
             className="w-full bg-[#343a40] text-[#f8f9fa] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 mt-4 shadow-sm hover:bg-[#212529] active:scale-[0.98] transition-all"
           >
-            Entrar
+            Cadastrar
             <ArrowRight size={18} />
           </button>
         </form>
@@ -115,12 +128,12 @@ export default function CadastroPage() {
           ) : (
             <GoogleIcon />
           )}
-          {isGoogleLoading ? 'Autenticando...' : 'Entrar com Google'}
+          {isGoogleLoading ? 'Autenticando...' : 'Cadastrar com Google'}
         </button>
 
         <div className="text-center">
           <p className="text-sm text-[#6c757d]">
-            Não tem uma conta? <Link to="/registro" className="text-[#212529] font-bold underline">Crie agora</Link>
+            Já tem uma conta? <Link to="/cadastro" className="text-[#212529] font-bold underline">Faça login</Link>
           </p>
         </div>
         </div>

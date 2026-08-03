@@ -76,7 +76,7 @@ export default function LandingPage() {
             </Link>
             <Link
               className="rounded-xl bg-[#343a40] px-6 py-2.5 font-body text-sm font-semibold text-[#f8f9fa] transition-all hover:bg-[#212529] shadow-sm active:scale-95"
-              to="/cadastro"
+              to="/registro"
             >
               Começar Agora
             </Link>
@@ -104,7 +104,7 @@ export default function LandingPage() {
           <div className="mb-16 flex flex-col items-center gap-4 sm:flex-row justify-center">
             <Link
               className="rounded-xl bg-[#343a40] px-8 py-4 text-lg font-semibold text-[#f8f9fa] shadow-md transition-all hover:bg-[#212529] hover:shadow-lg active:scale-95"
-              to="/cadastro"
+              to="/registro"
             >
               Começar grátis agora
             </Link>
@@ -281,7 +281,7 @@ export default function LandingPage() {
                 </ul>
                 <Link
                   className="w-full text-center rounded-xl border border-[#ced4da] py-3.5 text-sm font-semibold text-[#212529] transition-colors hover:bg-[#e9ecef] block"
-                  to="/cadastro"
+                  to="/registro"
                 >
                   Começar grátis
                 </Link>
@@ -325,7 +325,7 @@ export default function LandingPage() {
                 </ul>
                 <Link
                   className="w-full text-center rounded-xl bg-[#343a40] py-3.5 text-sm font-semibold text-[#f8f9fa] shadow-md transition-all hover:bg-[#212529] block"
-                  to="/cadastro"
+                  to="/registro"
                 >
                   Assinar Pro
                 </Link>
@@ -345,7 +345,7 @@ export default function LandingPage() {
             </p>
             <Link
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#343a40] px-8 py-4 text-sm font-semibold text-[#f8f9fa] shadow-md transition-all hover:scale-105 hover:bg-[#212529] active:scale-95"
-              to="/cadastro"
+              to="/registro"
             >
               Criar minha conta grátis
               <ArrowRight size={16} />

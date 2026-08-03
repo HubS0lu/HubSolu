@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { Home, Package, DollarSign, Settings, User } from 'lucide-react';
 import LandingPage from './pages/LandingPage';
 import CadastroPage from './pages/CadastroPage';
+import RegistroPage from './pages/RegistroPage';
 import PerfilPage from './pages/PerfilPage';
 import PlanosPage from './pages/PlanosPage';
 import SelecaoNegocioPage from './pages/SelecaoNegocioPage';
@@ -37,22 +38,24 @@ export default function App() {
             <CartProvider>
               <FavoritesProvider>
                 <Router>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/cadastro" element={<CadastroPage />} />
-                <Route path="/selecao-negocio" element={<SelecaoNegocioPage />} />
-                <Route path="/planos" element={<PlanosPage />} />
-                <Route path="/marketplace" element={<MarketplaceHome />} />
-                <Route path="/marketplace/category" element={<MarketplaceCategory />} />
-                <Route path="/marketplace/store" element={<MarketplaceStore />} />
-                <Route path="/*" element={
-                  <MobileLayout>
-                    <Routes>
-                      <Route path="/perfil" element={<PerfilPage />} />
-                    </Routes>
-                  </MobileLayout>
-                } />
-              </Routes>
+                  <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/cadastro" element={<CadastroPage />} />
+                    <Route path="/registro" element={<RegistroPage />} />
+                    <Route path="/selecao-negocio" element={<SelecaoNegocioPage />} />
+                    <Route path="/planos" element={<PlanosPage />} />
+                    <Route path="/marketplace" element={<MarketplaceHome />} />
+                    <Route path="/marketplace/category" element={<MarketplaceCategory />} />
+                    <Route path="/loja/:storeId" element={<MarketplaceStore />} />
+                    <Route path="/marketplace/store" element={<MarketplaceStore />} />
+                    <Route path="/*" element={
+                      <MobileLayout>
+                        <Routes>
+                          <Route path="/perfil" element={<PerfilPage />} />
+                        </Routes>
+                      </MobileLayout>
+                    } />
+                  </Routes>
                 </Router>
               </FavoritesProvider>
             </CartProvider>
