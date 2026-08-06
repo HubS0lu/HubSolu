@@ -199,68 +199,7 @@ export default function MarketplaceHome() {
           })}
         </div>
 
-        {/* Banner: Produto Mais Pedido */}
-        <div className="mt-10 mb-8 px-2 relative">
-          <div className="bg-[#e9ecef] rounded-2xl p-4 flex items-center shadow-sm border border-[#ced4da] ml-10 relative min-h-[90px]">
-            {/* Overlapping Image (Circle on the left) */}
-            <div className="absolute -left-10 w-[100px] h-[100px] rounded-full border-4 border-[#f8f9fa] shadow-md overflow-hidden bg-white z-10">
-              <img src="/images/double_smash_burger.jpg" alt="Mais Pedido" className="w-full h-full object-cover" />
-            </div>
-            
-            {/* Info */}
-            <div className="ml-[68px] flex-1 flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-bold text-[#e03131] uppercase tracking-wider">Top 1 da Semana</p>
-                <h3 className="text-sm font-extrabold text-[#212529] leading-tight mt-0.5">Double Smash</h3>
-                <p className="text-xs text-[#6c757d] font-medium mt-0.5">Burger & Co.</p>
-              </div>
-              <Link to="/marketplace/store" state={{ storeCategory: 'Hamburgueria' }} className="px-3 py-1.5 bg-[#343a40] text-[#f8f9fa] rounded-lg text-xs font-bold shadow-sm hover:bg-[#212529] transition-colors shrink-0">
-                Ver
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Sessão: Cupons e Ofertas */}
-        <div className="mb-10">
-          <h2 className="text-lg font-extrabold text-[#212529] mb-4">Cupons & Ofertas</h2>
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2 snap-x pr-4">
-            
-            <div className="snap-start shrink-0 w-[240px] h-[110px] rounded-3xl overflow-hidden shadow-md bg-gradient-to-br from-[#212529] to-[#343a40] border border-[#495057] relative flex flex-col justify-center px-6">
-              <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none transform -rotate-12">
-                <Ticket size={110} className="text-white" />
-              </div>
-              <h3 className="text-white font-extrabold text-xl relative z-10 drop-shadow-sm">Frete Grátis</h3>
-              <p className="text-[#ced4da] text-xs font-medium relative z-10 mt-1">Em todas as Pizzarias</p>
-            </div>
-            
-            <div className="snap-start shrink-0 w-[240px] h-[110px] rounded-3xl overflow-hidden shadow-md bg-gradient-to-br from-[#e03131] to-[#c92a2a] border border-[#e03131] relative flex flex-col justify-center px-6">
-              <div className="absolute -right-4 -bottom-4 opacity-15 pointer-events-none transform rotate-12">
-                <Percent size={110} className="text-white" />
-              </div>
-              <h3 className="text-white font-extrabold text-xl relative z-10 drop-shadow-sm">20% OFF</h3>
-              <p className="text-[#ffc9c9] text-xs font-medium relative z-10 mt-1">Acima de R$ 50</p>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Sessão: Chegaram Recentemente */}
-        <div className="mb-8">
-          <h2 className="text-lg font-extrabold text-[#212529] mb-4">Novidades na sua Área</h2>
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 snap-x pr-4">
-            {[1,2,3,4,5].map((item) => (
-              <div key={item} className="snap-start shrink-0 flex flex-col items-center gap-2 w-[76px]">
-                <div className="w-[72px] h-[72px] rounded-full border border-[#ced4da] shadow-sm overflow-hidden bg-white p-0.5 group hover:border-[#868e96] transition-colors cursor-pointer">
-                  <div className="w-full h-full rounded-full overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=150&q=80" alt="Nova Loja" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                  </div>
-                </div>
-                <h3 className="text-[11px] font-semibold text-[#495057] text-center leading-tight truncate w-full">Doce Sabor</h3>
-              </div>
-            ))}
-          </div>
-        </div>      </main>
+      </main>
 
       {/* Fixed Bottom Navigation with Modals */}
       <MarketplaceBottomNav />

@@ -45,7 +45,7 @@ export default function MarketplaceBottomNav() {
     const storeId = cart[0].storeId;
     const storeName = cart[0].storeName || 'Loja Parceira';
     const store = getStoreById(storeId);
-    const storeLogo = store ? store.logo : 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=200&q=80';
+    const storeLogo = store ? store.logo : '';
     
     addOrder({
       storeId,

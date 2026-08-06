@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Search, ChevronLeft, ChevronRight, ArrowLeft, Minus, Plus, Trash2, X, Instagram, SlidersHorizontal, Heart } from 'lucide-react';
+import { ShoppingCart, Search, ChevronLeft, ChevronRight, ArrowLeft, Minus, Plus, Trash2, X, Instagram, SlidersHorizontal, Heart, Store } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -11,20 +11,21 @@ import { formatWhatsAppNumber } from '../utils/formatWhatsApp';
 export default function MarketplaceStore() {
   const location = useLocation();
   const navigate = useNavigate();
-  const storeId = location.state?.storeId || 'burger-co';
+  const storeId = location.state?.storeId;
   const { getStoreById, getProductsByStore } = useStore();
   
-  const storeInfo = getStoreById(storeId) || {
-    name: 'Loja Desconhecida',
-    description: 'Informações não disponíveis.',
-    rating: 0,
-    banner: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80',
-    logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=200&q=80',
-    theme: 'theme-fashion-minimalist',
-    deliveryTime: '0 min',
-    deliveryFee: 0,
-    category: ''
-  };
+  const storeInfo = getStoreById(storeId);
+
+  if (!storeInfo) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#212529] text-white">
+        <Store size={48} className="mb-4 opacity-50" />
+        <h2 className="text-xl font-bold">Loja não encontrada</h2>
+        <button onClick={() => navigate('/marketplace')} className="mt-4 px-4 py-2 bg-[#343a40] rounded-xl hover:bg-[#495057]">Voltar ao início</button>
+      </div>
+    );
+  }
+
 
   const products = getProductsByStore(storeId);
   const categories = ['Todos', ...new Set(products.map(p => p.category))];
