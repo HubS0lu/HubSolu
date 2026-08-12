@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   Camera, User, Store, Settings, LogOut, ChevronRight, Palette, Check, 
   BarChart3, CreditCard, ShoppingBag, Users, Calendar, AlertCircle, ExternalLink, Activity,
-  ChefHat, Clock, Plus, Edit2, Trash2, Image, GripVertical, Save, Eye
+  ChefHat, Clock, Plus, Edit2, Trash2, Image, GripVertical, Save, Eye, Search, X
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useOrders } from '../contexts/OrderContext';
 import { useStore } from '../contexts/StoreContext';
 import { useAuth } from '../contexts/AuthContext';
 import ImageCropModal from '../components/ImageCropModal';
+import { allCategories } from '../data/categoriesData';
 
 const themeCategories = [
   { id: 'food', label: 'Alimentação' },
@@ -72,7 +73,7 @@ export default function PerfilPage() {
 
   const [storeData, setStoreData] = useState({
     name: myStore?.name || "Minha Nova Loja",
-    segment: myStore?.category || "Segmento da Loja",
+    segment: myStore?.category || "",
     description: myStore?.description || "",
     address: myStore?.address || "",
     hours: myStore?.hours || ""
@@ -108,6 +109,10 @@ export default function PerfilPage() {
   
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // Estado do modal de segmento
+  const [isSegmentModalOpen, setIsSegmentModalOpen] = useState(false);
+  const [segmentSearchQuery, setSegmentSearchQuery] = useState('');
 
   // Estado do modal de crop
   const [cropData, setCropData] = useState({ src: null, type: null, aspect: 1 });
@@ -627,7 +632,14 @@ export default function PerfilPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-2">Segmento</label>
-                  <input type="text" value={storeData.segment} onChange={e => setStoreData({...storeData, segment: e.target.value})} className="w-full bg-[#f8f9fa] border border-[#ced4da] rounded-xl px-4 py-3 text-[#212529] text-sm focus:outline-none focus:border-[#adb5bd] focus:bg-white transition-colors" />
+                  <button 
+                    onClick={() => setIsSegmentModalOpen(true)}
+                    type="button"
+                    className="w-full bg-[#f8f9fa] border border-[#ced4da] rounded-xl px-4 py-3 text-[#212529] text-sm flex justify-between items-center focus:outline-none focus:border-[#adb5bd] focus:bg-white transition-colors text-left"
+                  >
+                    <span>{storeData.segment || 'Selecione'}</span>
+                    <ChevronRight size={16} className="text-[#adb5bd]" />
+                  </button>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-2">Descrição (Bio)</label>
@@ -928,6 +940,91 @@ export default function PerfilPage() {
           onCropComplete={handleCropComplete} 
           onClose={() => setCropData({ src: null, type: null, aspect: 1 })}
         />
+      )}
+
+      {/* SEGMENT MODAL (MOBILE FRIENDLY) */}
+      {isSegmentModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#212529]/80 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#f8f9fa] w-full max-w-[480px] sm:rounded-3xl rounded-t-3xl h-[85vh] sm:h-[80vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-full duration-300">
+            {/* Header */}
+            <div className="px-6 py-4 flex justify-between items-center border-b border-[#e9ecef]">
+              <h3 className="font-headline font-bold text-lg text-[#212529]">Selecionar Segmento</h3>
+              <button 
+                onClick={() => setIsSegmentModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center bg-[#e9ecef] rounded-full text-[#495057] hover:bg-[#dee2e6] transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            {/* Search */}
+            <div className="p-4 border-b border-[#e9ecef]">
+              <div className="relative">
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd]" />
+                <input
+                  type="text"
+                  placeholder="Buscar segmento..."
+                  value={segmentSearchQuery}
+                  onChange={(e) => setSegmentSearchQuery(e.target.value)}
+                  className="w-full bg-[#e9ecef] border border-transparent rounded-xl py-3 pl-12 pr-4 text-sm text-[#212529] focus:outline-none focus:bg-white focus:border-[#adb5bd] transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 hide-scrollbar">
+              {Object.keys(allCategories).map(mainCategory => {
+                const filteredSubs = allCategories[mainCategory].filter(sub => 
+                  sub.name.toLowerCase().includes(segmentSearchQuery.toLowerCase())
+                );
+                
+                if (filteredSubs.length === 0) return null;
+
+                return (
+                  <div key={mainCategory} className="mb-6">
+                    <h4 className="text-[11px] font-bold text-[#868e96] uppercase tracking-widest mb-3 pl-2">
+                      {mainCategory}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {filteredSubs.map((sub, idx) => {
+                        const isSelected = storeData.segment === sub.name;
+                        const Icon = sub.icon;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setStoreData({ ...storeData, segment: sub.name });
+                              setIsSegmentModalOpen(false);
+                              setSegmentSearchQuery('');
+                            }}
+                            className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all ${
+                              isSelected 
+                                ? 'bg-[#343a40] text-[#f8f9fa] border-[#343a40] shadow-sm' 
+                                : 'bg-white text-[#495057] border-[#e9ecef] hover:bg-[#f8f9fa]'
+                            }`}
+                          >
+                            <Icon size={24} className={`mb-2 ${isSelected ? 'text-[#f8f9fa]' : 'text-[#adb5bd]'}`} />
+                            <span className="text-xs font-semibold">{sub.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Empty state */}
+              {Object.values(allCategories).every(subs => 
+                subs.every(s => !s.name.toLowerCase().includes(segmentSearchQuery.toLowerCase()))
+              ) && (
+                <div className="flex flex-col items-center justify-center py-10 opacity-50">
+                  <Search size={32} className="text-[#adb5bd] mb-3" />
+                  <p className="text-sm text-[#495057] font-medium text-center">Nenhum segmento encontrado para "{segmentSearchQuery}"</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

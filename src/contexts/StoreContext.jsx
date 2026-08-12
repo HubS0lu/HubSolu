@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { storesData as mockStores, productsData as mockProducts } from '../data/mockData';
 
 const StoreContext = createContext({});
 
@@ -18,16 +19,22 @@ export const StoreProvider = ({ children }) => {
       const { data: storesData, error: storesError } = await supabase.from('stores').select('*');
       if (storesError) {
         console.error("Erro ao buscar lojas:", storesError);
-      } else if (storesData) {
+        setStores(mockStores);
+      } else if (storesData && storesData.length > 0) {
         setStores(storesData);
+      } else {
+        setStores(mockStores);
       }
 
       // Busca todos os produtos
       const { data: productsData, error: productsError } = await supabase.from('products').select('*');
       if (productsError) {
         console.error("Erro ao buscar produtos:", productsError);
-      } else if (productsData) {
+        setProducts(mockProducts);
+      } else if (productsData && productsData.length > 0) {
         setProducts(productsData);
+      } else {
+        setProducts(mockProducts);
       }
 
       setLoadingData(false);
