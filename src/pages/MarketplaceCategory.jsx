@@ -9,7 +9,7 @@ export default function MarketplaceCategory() {
   const location = useLocation();
   const navigate = useNavigate();
   const categoryName = location.state?.categoryName || 'Categoria';
-  const categoryImg = location.state?.categoryImg || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80';
+
 
   const { getStoresByCategory } = useStore();
   const { favorites, toggleFavorite } = useFavorites();
