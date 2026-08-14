@@ -7,6 +7,7 @@ import { useStore } from '../contexts/StoreContext';
 import { useOrders } from '../contexts/OrderContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { formatWhatsAppNumber } from '../utils/formatWhatsApp';
+import CheckoutModal from '../components/CheckoutModal';
 
 export default function MarketplaceStore() {
   const location = useLocation();
@@ -42,6 +43,10 @@ export default function MarketplaceStore() {
   // Checkout Form State
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('PIX');
+  const [notes, setNotes] = useState('');
+  const [changeFor, setChangeFor] = useState('');
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -83,39 +88,47 @@ export default function MarketplaceStore() {
       return;
     }
     
-    if (!address) {
-      alert("Por favor, preencha o endereço de entrega.");
-      return;
-    }
+    // Open checkout modal
+    setIsCheckoutModalOpen(true);
+  };
 
-    const total = totalValue.toFixed(2).replace('.', ',');
+  const handlePaymentSuccess = async (paymentIntent) => {
+    setIsCheckoutModalOpen(false);
     
     // Registrar pedido no histórico
-    addOrder({
+    await addOrder({
       storeId: storeInfo.id,
       storeName: storeInfo.name,
       storeLogo: storeInfo.logo,
       items: cart,
       total: totalValue,
-      address,
-      paymentMethod,
+      address: 'Retirada no Local',
+      paymentMethod: 'Stripe',
+      userId: user.id,
+      customerName: user.user_metadata?.full_name || user.email?.split('@')[0],
+      notes,
+      changeFor,
+      deliveryType: 'Retirada'
     });
     
-    // Limpar o carrinho e mostrar msg localmente opcional
     clearCart();
     setIsCartOpen(false);
+    setOrderSuccess(true);
+  };
 
-    let message = `*NOVO PEDIDO - ${storeInfo.name}*\n`;
-    message += `Cliente: ${user.name}\n`;
-    message += `Endereço: ${address}\n`;
-    message += `Pagamento: ${paymentMethod}\n\n`;
+  const handleWhatsApp = () => {
+    const total = totalValue.toFixed(2).replace('.', ',');
+    let message = `*NOVO PEDIDO (Já Pago via HubSolu) - ${storeInfo.name}*\n`;
+    message += `Cliente: ${user.user_metadata?.full_name || user.email?.split('@')[0]}\n`;
+    message += `Tipo: Retirada no Local\n`;
+    if (notes) message += `Observações: ${notes}\n`;
     message += `*Itens:*\n`;
     
     cart.forEach(item => {
       message += `${item.quantity}x ${item.name} (R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')})\n`;
     });
     
-    message += `\n*Total: R$ ${total}*`;
+    message += `\n*Total Pago: R$ ${total}*`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappNumber = storeInfo.whatsapp || localStorage.getItem('global_whatsapp') || "5511999999999"; 
@@ -369,28 +382,33 @@ export default function MarketplaceStore() {
             <div className="p-6 border-t border-store-secondary/30 bg-store-secondary/5 mt-auto">
               {cart.length > 0 && (
                 <div className="mb-4 space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-store-text mb-1">Endereço de Entrega</label>
-                    <input 
-                      type="text" 
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Rua, Número, Bairro, Cidade"
-                      className="w-full bg-store-bg border border-store-secondary/50 rounded-lg p-3 focus:outline-none focus:border-store-primary focus:ring-1 focus:ring-store-primary text-store-text placeholder-store-muted"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-store-text mb-1">Forma de Pagamento</label>
-                    <select 
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-full bg-store-bg border border-store-secondary/50 rounded-lg p-3 focus:outline-none focus:border-store-primary focus:ring-1 focus:ring-store-primary text-store-text appearance-none"
-                    >
-                      <option value="PIX">PIX</option>
-                      <option value="Cartão de Crédito">Cartão de Crédito</option>
-                      <option value="Cartão de Débito">Cartão de Débito</option>
-                      <option value="Dinheiro">Dinheiro</option>
-                    </select>
+                  {storeInfo.category === 'Alimentação' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-store-text mb-1">Observações do Pedido</label>
+                        <input 
+                          type="text" 
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Ex: Tirar cebola, ponto da carne..."
+                          className="w-full bg-store-bg border border-store-secondary/50 rounded-lg p-3 focus:outline-none focus:border-store-primary focus:ring-1 focus:ring-store-primary text-store-text placeholder-store-muted"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-store-text mb-1">Precisa de troco? Para quanto?</label>
+                        <input 
+                          type="text" 
+                          value={changeFor}
+                          onChange={(e) => setChangeFor(e.target.value)}
+                          placeholder="Ex: Troco para R$ 50"
+                          className="w-full bg-store-bg border border-store-secondary/50 rounded-lg p-3 focus:outline-none focus:border-store-primary focus:ring-1 focus:ring-store-primary text-store-text placeholder-store-muted"
+                        />
+                      </div>
+                    </>
+                  )}
+                  <div className="bg-store-secondary/10 p-3 rounded-lg flex items-center justify-between border border-store-secondary/20">
+                    <span className="text-store-text font-medium text-sm">Opção de Entrega</span>
+                    <span className="text-store-primary font-bold text-sm">Retirada no Local</span>
                   </div>
                 </div>
               )}
@@ -406,7 +424,7 @@ export default function MarketplaceStore() {
                 onClick={handleCheckout}
                 className="w-full py-4 rounded-xl bg-store-primary text-store-bg font-bold text-lg hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
               >
-                {isAuthenticated ? 'Finalizar Compra no WhatsApp' : 'Fazer Login para Finalizar'}
+                {isAuthenticated ? 'Pagar e Fazer Pedido' : 'Fazer Login para Finalizar'}
               </button>
             </div>
           </div>
@@ -445,6 +463,43 @@ export default function MarketplaceStore() {
                   {option.label}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stripe Checkout Modal */}
+      <CheckoutModal 
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        amount={totalValue}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      {/* Success Modal */}
+      {orderSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => { setOrderSuccess(false); navigate('/meus-pedidos'); }}></div>
+          <div className="bg-store-bg w-full max-w-sm rounded-2xl shadow-xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-300 p-6 text-center">
+            <div className="w-16 h-16 bg-store-primary/20 text-store-primary rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShoppingCart size={32} />
+            </div>
+            <h2 className="text-xl font-bold text-store-text mb-2">Pedido Confirmado!</h2>
+            <p className="text-sm text-store-muted mb-6">Seu pagamento foi processado e a loja já recebeu sua comanda na cozinha.</p>
+            
+            <div className="space-y-3">
+              <button 
+                onClick={() => { setOrderSuccess(false); navigate('/meus-pedidos'); }}
+                className="w-full py-3 bg-store-primary text-store-bg font-bold rounded-xl hover:opacity-90 transition-colors"
+              >
+                Acompanhar Pedido
+              </button>
+              <button 
+                onClick={handleWhatsApp}
+                className="w-full py-3 bg-transparent border border-store-primary text-store-primary font-bold rounded-xl hover:bg-store-primary/10 transition-colors"
+              >
+                Avisar Loja no WhatsApp
+              </button>
             </div>
           </div>
         </div>

@@ -27,7 +27,13 @@ export const OrderProvider = ({ children }) => {
       customer_name: orderData.customerName || 'Cliente Anônimo',
       items: orderData.items || [],
       status: 0,
-      display_id: displayId
+      display_id: displayId,
+      user_id: orderData.userId || null,
+      payment_method: orderData.paymentMethod || 'Não informado',
+      total: orderData.total || 0,
+      notes: orderData.notes || '',
+      change_for: orderData.changeFor || '',
+      delivery_type: orderData.deliveryType || 'Retirada'
     };
     
     const { data, error } = await supabase.from('orders').insert([newOrder]).select();
@@ -64,13 +70,18 @@ export const OrderProvider = ({ children }) => {
     setOrders([]);
   };
 
+  const getUserOrders = (userId) => {
+    return orders.filter(order => order.user_id === userId);
+  };
+
   return (
     <OrderContext.Provider value={{
       orders,
       addOrder,
       updateOrderStatus,
       deleteOrder,
-      clearAllOrders
+      clearAllOrders,
+      getUserOrders
     }}>
       {children}
     </OrderContext.Provider>

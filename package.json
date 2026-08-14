@@ -11,6 +11,8 @@
   "dependencies": {
     "@babel/core": "^8.0.1",
     "@babel/preset-react": "^8.0.1",
+    "@stripe/react-stripe-js": "^6.8.1",
+    "@stripe/stripe-js": "^9.13.0",
     "@supabase/supabase-js": "^2.112.0",
     "lucide-react": "^0.378.0",
     "react": "^18.2.0",

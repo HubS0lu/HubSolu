@@ -10,6 +10,7 @@ import SelecaoNegocioPage from './pages/SelecaoNegocioPage';
 import MarketplaceHome from './pages/MarketplaceHome';
 import MarketplaceCategory from './pages/MarketplaceCategory';
 import MarketplaceStore from './pages/MarketplaceStore';
+import MeusPedidosPage from './pages/MeusPedidosPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -54,6 +55,7 @@ export default function App() {
                         <MobileLayout>
                           <Routes>
                             <Route path="/perfil" element={<PerfilPage />} />
+                            <Route path="/meus-pedidos" element={<MeusPedidosPage />} />
                           </Routes>
                         </MobileLayout>
                       </ProtectedRoute>
