@@ -11,6 +11,8 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 ### Adicionado
 
+- **Repositório do GitHub**: Alterada a origem (remote origin) do projeto para a nova conta e repositório (`HubS0lu/HubSolu`).
+- **Banco de Dados Supabase**: Disponibilizado script SQL para criação e configuração rápida das tabelas `stores`, `products` e `orders` no novo banco de dados.
 - **Sub-telas Interativas no Perfil do Delivery**: A tela de perfil na demonstração `demo_delivery_ui.html` agora possui sub-telas navegáveis para "Meus Endereços", "Formas de Pagamento" e "Meus Pedidos". Os usuários podem visualizar formulários e histórico simulados que se adaptam dinamicamente ao tema selecionado (Fast Food, Vegano, BBQ).
 - **Tela de Perfil no App Delivery**: A tela `demo_delivery_ui.html` foi convertida em um mini-app interativo (Single Page App), onde agora é possível alternar entre o cardápio e a tela de Perfil do cliente através do menu inferior, mantendo a adaptação dinâmica dos temas de cores.
 - **Nova Tela de Perfil do Usuário (`perfil_usuario.html`)**: Desenvolvida a tela de perfil e gerenciamento do lojista, dividida em Dados Pessoais, Dados do Negócio e Configurações (com integração ao layout Dark Mode).
