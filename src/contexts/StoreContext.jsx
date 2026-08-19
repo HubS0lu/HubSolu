@@ -102,8 +102,10 @@ export const StoreProvider = ({ children }) => {
       console.error("Erro ao atualizar loja", error);
       throw error;
     }
-    if (data) {
+    if (data && data.length > 0) {
       setStores(prev => prev.map(s => s.id === updatedStore.id ? data[0] : s));
+    } else {
+      console.warn("Aviso: A loja não foi atualizada no banco. Verifique as políticas de RLS (Row Level Security) no Supabase.");
     }
   };
 

@@ -77,7 +77,7 @@ export default function SelecaoNegocioPage() {
         <div className="mt-auto pb-10">
           <button
             disabled={!selected}
-            onClick={() => navigate('/planos')}
+            onClick={() => navigate('/planos', { state: { businessType: selected } })}
             className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold transition-all ${
               selected 
                 ? 'bg-[#343a40] text-[#f8f9fa] shadow-sm hover:bg-[#212529] active:scale-[0.98]' 

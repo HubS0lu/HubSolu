@@ -52,6 +52,24 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
+  const register = async (email, password, metadata = {}) => {
+    if (isMockMode) {
+      const mockUser = { id: 'mock-id', email, user_metadata: metadata };
+      setUser(mockUser);
+      localStorage.setItem('mock_user', JSON.stringify(mockUser));
+      return mockUser;
+    }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata
+      }
+    });
+    if (error) throw error;
+    return data.user;
+  };
+
   const loginWithGoogle = async () => {
     if (isMockMode) {
       const mockUser = { id: 'google-mock', email: 'usuario@gmail.com', user_metadata: { full_name: 'Usuário Google' } };
@@ -83,6 +101,7 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     login,
+    register,
     loginWithGoogle,
     logout,
     isAuthenticated: !!user,

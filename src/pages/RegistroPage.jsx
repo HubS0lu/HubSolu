@@ -15,22 +15,25 @@ const GoogleIcon = () => (
 export default function RegistroPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loginWithGoogle } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
     
-    // In a real app we would register here. For now we use login context mock
-    login(email, password);
-    
-    // Redirect to selecao-negocio
-    navigate('/selecao-negocio', { replace: true });
+    try {
+      await register(email, password, { full_name: nome });
+      // Redirect to selecao-negocio
+      navigate('/selecao-negocio', { replace: true });
+    } catch (error) {
+      console.error("Erro ao registrar:", error);
+      alert("Erro ao criar conta. Verifique os dados e tente novamente.");
+    }
   };
 
   const handleGoogleLogin = async () => {

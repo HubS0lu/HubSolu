@@ -1,10 +1,35 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Star, ArrowRight, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useStore } from '../contexts/StoreContext';
 
 export default function PlanosPage() {
   const [selectedPlan, setSelectedPlan] = useState('pro');
+  const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  const { createStore } = useStore();
+  const businessType = location.state?.businessType || 'outro';
+
+  const handleContinue = async () => {
+    if (user && !isCreating) {
+      setIsCreating(true);
+      try {
+        const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário';
+        const storeName = `Loja de ${userName}`;
+        await createStore({
+          user_id: user.id,
+          name: storeName,
+          category: businessType,
+        });
+      } catch (error) {
+        console.error("Erro ao criar a loja:", error);
+      }
+    }
+    navigate('/perfil');
+  };
 
   return (
     <div className="flex justify-center bg-[#212529] min-h-screen">
@@ -107,10 +132,11 @@ export default function PlanosPage() {
       {/* Action Bottom */}
       <div className="p-6 border-t border-[#e9ecef] bg-[#f8f9fa] pb-10">
         <button 
-          onClick={() => navigate('/perfil')}
-          className="w-full bg-[#343a40] text-[#f8f9fa] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-sm hover:bg-[#212529] active:scale-[0.98] transition-all"
+          onClick={handleContinue}
+          disabled={isCreating}
+          className="w-full bg-[#343a40] text-[#f8f9fa] font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-sm hover:bg-[#212529] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {selectedPlan === 'pro' ? 'Assinar Plano Pro' : 'Continuar com Gratuito'}
+          {isCreating ? 'Finalizando...' : (selectedPlan === 'pro' ? 'Assinar Plano Pro' : 'Continuar com Gratuito')}
           <ArrowRight size={18} />
         </button>
         <p className="text-center font-body text-[10px] text-[#6c757d] mt-3">

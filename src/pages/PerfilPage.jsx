@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useOrders } from '../contexts/OrderContext';
 import { useStore } from '../contexts/StoreContext';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../utils/supabaseClient';
 import ImageCropModal from '../components/ImageCropModal';
 import { allCategories } from '../data/categoriesData';
 
@@ -54,7 +55,7 @@ export default function PerfilPage() {
   
   const { orders, updateOrderStatus } = useOrders();
   const { stores, getProductsByStore, addProduct, updateProduct, deleteProduct: removeProductFromStore, updateStore, createStore } = useStore();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   
   const myStore = stores.find(s => s.user_id === user?.id);
   const myProducts = myStore ? getProductsByStore(myStore.id) : [];
@@ -67,16 +68,16 @@ export default function PerfilPage() {
   const [userData, setUserData] = useState({
     name: userName,
     email: userEmail,
-    phone: myStore?.whatsapp || '',
-    instagram: localStorage.getItem('store_instagram') || ''
+    phone: user?.user_metadata?.phone || localStorage.getItem('store_whatsapp') || '',
+    instagram: user?.user_metadata?.instagram || localStorage.getItem('store_instagram') || ''
   });
 
   const [storeData, setStoreData] = useState({
     name: myStore?.name || "Minha Nova Loja",
     segment: myStore?.category || "",
     description: myStore?.description || "",
-    address: myStore?.address || "",
-    hours: myStore?.hours || ""
+    address: localStorage.getItem('store_address') || "",
+    hours: localStorage.getItem('store_hours') || ""
   });
 
   const [logoPreview, setLogoPreview] = useState(myStore?.logo || null);
@@ -88,20 +89,21 @@ export default function PerfilPage() {
       setUserData(prev => ({
         ...prev,
         name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Lojista',
-        email: user?.email || ''
+        email: user?.email || '',
+        phone: user?.user_metadata?.phone || prev.phone,
+        instagram: user?.user_metadata?.instagram || prev.instagram
       }));
     }
   }, [user]);
 
   useEffect(() => {
     if (myStore) {
-      setStoreData({
+      setStoreData(prev => ({
+        ...prev,
         name: myStore.name || "",
         segment: myStore.category || "",
-        description: myStore.description || "",
-        address: myStore.address || "",
-        hours: myStore.hours || ""
-      });
+        description: myStore.description || ""
+      }));
       setLogoPreview(myStore.logo || null);
       setBannerPreview(myStore.banner || null);
     }
@@ -118,28 +120,44 @@ export default function PerfilPage() {
   const [cropData, setCropData] = useState({ src: null, type: null, aspect: 1 });
 
   // --- Funções ---
-  const handleSaveUserData = () => {
-    localStorage.setItem('store_instagram', userData.instagram);
-    localStorage.setItem('global_whatsapp', userData.phone);
-    if (myStore) {
-      updateStore({
-        ...myStore,
-        whatsapp: userData.phone
-      });
+  const handleSaveUserData = async () => {
+    try {
+      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('temporaria')) {
+        localStorage.setItem('store_instagram', userData.instagram);
+        localStorage.setItem('global_whatsapp', userData.phone);
+      } else {
+        await supabase.auth.updateUser({
+          data: { 
+            full_name: userData.name,
+            phone: userData.phone,
+            instagram: userData.instagram
+          }
+        });
+      }
+
+      // Save locally to prevent errors since these columns don't exist in Supabase yet
+      localStorage.setItem('store_whatsapp', userData.phone);
+      localStorage.setItem('store_instagram', userData.instagram);
+
+      alert("Dados pessoais salvos com sucesso!");
+    } catch (e) {
+      console.error(e);
+      alert("Erro ao salvar dados pessoais.");
     }
-    alert("Dados pessoais salvos com sucesso!");
   };
   
   const handleSaveStoreData = async () => {
     try {
+      // Save locally to prevent errors since these columns don't exist in Supabase yet
+      localStorage.setItem('store_address', storeData.address);
+      localStorage.setItem('store_hours', storeData.hours);
+
       if (myStore) {
         await updateStore({
-          ...myStore,
+          id: myStore.id,
           name: storeData.name,
           category: storeData.segment,
           description: storeData.description,
-          address: storeData.address,
-          hours: storeData.hours,
           logo: logoPreview || myStore.logo,
           banner: bannerPreview || myStore.banner
         });
@@ -150,8 +168,6 @@ export default function PerfilPage() {
           name: storeData.name,
           category: storeData.segment,
           description: storeData.description,
-          address: storeData.address,
-          hours: storeData.hours,
           logo: logoPreview,
           banner: bannerPreview,
           theme: activeTheme
@@ -159,7 +175,8 @@ export default function PerfilPage() {
         alert("Loja criada com sucesso!");
       }
     } catch (e) {
-      alert("Ocorreu um erro ao salvar a loja.");
+      console.error(e);
+      alert("Ocorreu um erro ao salvar a loja: " + (e.message || "Erro desconhecido"));
     }
   };
 
@@ -496,7 +513,7 @@ export default function PerfilPage() {
               Salvar Alterações
             </button>
             
-            <button className="w-full flex items-center justify-center gap-2 mt-4 py-4 text-[#e03131] hover:bg-[#fff5f5] rounded-xl transition-colors font-medium">
+            <button onClick={logout} className="w-full flex items-center justify-center gap-2 mt-4 py-4 text-[#e03131] hover:bg-[#fff5f5] rounded-xl transition-colors font-medium">
               <LogOut size={18} />
               Sair da Conta
             </button>
